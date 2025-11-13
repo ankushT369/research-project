@@ -1,16 +1,21 @@
 from math import comb
 
 class BitCombinations:
-    def __init__(self, k: int, n: int, m: int):
+    def __init__(self, k: int, n: int, m: int, sec_len: int):
         self.k = k
         self.n = n
         self.m = m
+        self.sec_len = sec_len
         self.zeros = k - 1
         self.ones = n - self.zeros
         self.total_comb = comb(n, k - 1)
         self.matrix = []      # Will store combinations as lists of bits
         self.mand_mask = []   # Will store mandatory mask
         self.combined_mat = []
+        self.repeated_combined_mat = []
+        
+        if not (m < k < n):
+            raise ValueError("Must satisfy m < k < n")
 
     def mandatory_mask(self):
         """Create identity + zero rows as mandatory mask"""
@@ -19,9 +24,9 @@ class BitCombinations:
         mask_matrix = identity + zeros
         self.mand_mask = mask_matrix
 
-        print("\nMandatory Matrix:")
-        for row in mask_matrix:
-            print(row)
+        # print("\nMandatory Matrix:")
+        # for row in mask_matrix:
+        #     print(row)
 
     def generate(self):
         """Generate all bit combinations with (k-1) zeros"""
@@ -73,11 +78,26 @@ class BitCombinations:
     def get_ith_mask(self, i, length):
         mask_i = self.combined_mat[i]
         return mask_i * (length // len(mask_i)) + mask_i[0:length % len(mask_i)]
-        
+    
+    def repeat_mask(self):
+        # for repeating mask
+        print("\nrepeated combined mask\n")
+        base_len = len(self.combined_mat[0])
+        for mask in self.combined_mat:
+            repeats = self.sec_len // base_len
+            remainder = self.sec_len % base_len
+            repeated_mask = mask * repeats + mask[:remainder]
+            self.repeated_combined_mat.append(repeated_mask)
+
+        return self.repeated_combined_mat
+    
+    def print_repeated_mask_matrix(self):
+        for row in self.repeated_combined_mat:
+            self.print_list(row)
 
 
 if __name__ == "__main__":
-    combo = BitCombinations(k=5, n=7, m=3)
+    combo = BitCombinations(k=5, n=7, m=3, sec_len=80)
     combo.generate()
 
     # Transpose and print
@@ -96,3 +116,6 @@ if __name__ == "__main__":
     #combo.print_list([1, 2, 3])
     combo.print_mask_matrix()
     combo.print_list(combo.get_ith_mask(0, 80))
+
+    combo.repeated_mask = combo.repeat_mask()
+    combo.print_repeated_mask_matrix()
