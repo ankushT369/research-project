@@ -131,11 +131,37 @@ class BitCombinations:
     # ------------------------------------------------------------------
     # Share generation / reconstruction
     # ------------------------------------------------------------------
+    
+    def _ensure_mask_coverage_for_reconstruction(self) -> None:
+        """
+        Ensure that, for the chosen k rows (last k rows),
+        every column has at least one '1' in the mask.
+
+        This guarantees that AND+OR reconstruction returns the original bits.
+        """
+        if not self.repeated_combined_matrix:
+            self.build_repeated_mask()
+
+        start = self.n - self.k            # we use last k rows
+        rows = self.repeated_combined_matrix[start:]
+        num_rows = len(rows)
+        num_cols = len(rows[0])
+
+        for col in range(num_cols):
+            # If all 0 in this column among chosen rows, flip one bit to 1
+            if all(rows[r][col] == 0 for r in range(num_rows)):
+                rows[-1][col] = 1   # set last row's bit to 1
+
+        # write back into repeated_combined_matrix
+        for r in range(num_rows):
+            self.repeated_combined_matrix[start + r] = rows[r]
 
     def share_generation(self) -> None:
         """AND each bit with the corresponding bit in binary_sec_txt"""
         if not self.repeated_combined_matrix:
             self.build_repeated_mask()
+
+        self._ensure_mask_coverage_for_reconstruction()
 
         self.combined_AND_mask = [
             [a & b for a, b in zip(row, self.secret_bits)]
@@ -214,25 +240,25 @@ class BitCombinations:
 
 
 
-if __name__ == "__main__":
-    combo = BitCombinations(k=5, n=7, m=3, sec_txt="secr_t")
+# if __name__ == "__main__":
+#     combo = BitCombinations(k=5, n=7, m=3, sec_txt="secr_t")
 
-    combo.generate_combinations()
-    combo.build_mandatory_mask()
-    combo.build_combined_with_mandatory()
-    combo.build_repeated_mask()
-    combo.share_generation()
+#     combo.generate_combinations()
+#     combo.build_mandatory_mask()
+#     combo.build_combined_with_mandatory()
+#     combo.build_repeated_mask()
+#     combo.share_generation()
 
-    print("binary msg: ")
-    BitCombinations.print_row(combo.secret_bits)
+#     print("binary msg: ")
+#     BitCombinations.print_row(combo.secret_bits)
 
-    print("\nafter combining with mandatory mask (combined_matrix):")
-    combo.print_combined_matrix()
+#     print("\nafter combining with mandatory mask (combined_matrix):")
+#     combo.print_combined_matrix()
 
-    print("\nafter repeating (repeated_combined_matrix):")
-    combo.print_repeated_combined_matrix()
+#     print("\nafter repeating (repeated_combined_matrix):")
+#     combo.print_repeated_combined_matrix()
 
-    print("\nafter AND-ing (combined_AND_mask):")
-    combo.print_combined_AND_mask()
+#     print("\nafter AND-ing (combined_AND_mask):")
+#     combo.print_combined_AND_mask()
 
-    print("\nreconstructed msg:", combo.reconstruct_secret())
+#     print("\nreconstructed msg:", combo.reconstruct_secret())
