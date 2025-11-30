@@ -1,0 +1,40 @@
+name: Greetings
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            👋 Hi! Thank you for opening your first issue in this repo.
+
+            We really appreciate your contribution.  
+            Please make sure you’ve:
+            - Described the bug/feature clearly
+            - Added steps to reproduce (if it’s a bug)
+            - Included relevant logs/screenshots
+
+            A maintainer will take a look soon 🚀
+          pr-message: |
+            🎉 Thanks for your first pull request!
+
+            A maintainer will review it as soon as possible.  
+            Meanwhile, please make sure:
+            - The PR description explains *what* and *why*
+            - All checks are passing
+            - Linked issues (if any) are referenced, e.g. `Fixes #123`
+
+            Welcome to the project
