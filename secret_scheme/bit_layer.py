@@ -19,9 +19,6 @@ class BitCombinations:
         self.m = m
         self.sec_txt = sec_txt
 
-        # self.binary_sec_txt = []
-        # self.sec_len = None 
-
         self.zeros = k - 1
         self.ones = n - self.zeros
         self.total_comb = comb(n, k - 1)
@@ -211,54 +208,3 @@ class BitCombinations:
     def print_combined_AND_mask(self) -> None:
         for row in self.combined_AND_mask:
             self.print_row(row)  
-
-    # def get_matrix(self):
-    #     return self.matrix
-
-    # def print_list(self, l):
-    #     for element in l:
-    #         print(element, end = "")
-    #     print("")
-         
-    # def print_mask_matrix(self):
-    #     for row in self.combined_mat:
-    #         self.print_list(row)
-
-    # def get_ith_mask(self, i, length):
-    #     mask_i = self.combined_mat[i]
-    #     return mask_i * (length // len(mask_i)) + mask_i[0:length % len(mask_i)]
-
-    # def print_repeated_mask_matrix(self):
-    #     for row in self.repeated_combined_matrix:
-    #         self.print_list(row)
-
-    # def print_combined_AND_mask(self):
-    #     for row in self.combined_AND_mask:
-    #         self.print_list(row)
-  
-
-
-
-
-# if __name__ == "__main__":
-#     combo = BitCombinations(k=5, n=7, m=3, sec_txt="secr_t")
-
-#     combo.generate_combinations()
-#     combo.build_mandatory_mask()
-#     combo.build_combined_with_mandatory()
-#     combo.build_repeated_mask()
-#     combo.share_generation()
-
-#     print("binary msg: ")
-#     BitCombinations.print_row(combo.secret_bits)
-
-#     print("\nafter combining with mandatory mask (combined_matrix):")
-#     combo.print_combined_matrix()
-
-#     print("\nafter repeating (repeated_combined_matrix):")
-#     combo.print_repeated_combined_matrix()
-
-#     print("\nafter AND-ing (combined_AND_mask):")
-#     combo.print_combined_AND_mask()
-
-#     print("\nreconstructed msg:", combo.reconstruct_secret())

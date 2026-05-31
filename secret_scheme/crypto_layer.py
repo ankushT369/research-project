@@ -1,87 +1,126 @@
-import os
 import base64
 import hashlib
 
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from .crypto.base import Cipher
 
 
 class CryptoLayer:
     """
     Handles:
-        M  -> M' (enveloped secret for sharing)
-        M' -> M  (verification + decryption)
+
+        M  -> M'
+        M' -> M
+
+    Format:
+
+        ALGO:L:KEY_B64:CIPHERTEXT_B64
     """
 
-    def __init__(self, key_size: int = 32, nonce_size: int = 12):
-        self.key_size = key_size      # 32 bytes -> AES-256
-        self.nonce_size = nonce_size  # 12 bytes for AES-GCM
+    HASH_SIZE = 32
+
+    def __init__(self, cipher: Cipher):
+        self.cipher = cipher
 
     @staticmethod
     def _sha256(data: bytes) -> bytes:
         return hashlib.sha256(data).digest()
 
-    def _generate_key(self) -> bytes:
-        return os.urandom(self.key_size)
+    def build_secret_for_sharing(
+        self,
+        message: str
+    ) -> str:
 
-    def _generate_nonce(self) -> bytes:
-        return os.urandom(self.nonce_size)
+        message_bytes = message.encode("utf-8")
 
-    def build_secret_for_sharing(self, message: str) -> str:
-        """
-        M -> M' (ASCII): "L:K_b64:E_b64"
-        """
-        m_bytes = message.encode("utf-8")
-        h_bytes = self._sha256(m_bytes)
+        digest = self._sha256(message_bytes)
 
-        k_bytes = self._generate_key()
-        aesgcm = AESGCM(k_bytes)
-        nonce = self._generate_nonce()
+        plaintext = digest + message_bytes
 
-        plaintext = h_bytes + m_bytes
+        key_bytes, encrypted_bytes = self.cipher.encrypt(
+            plaintext
+        )
 
-        ct = aesgcm.encrypt(nonce, plaintext, None)
-        e_bytes = nonce + ct
+        key_b64 = base64.b64encode(
+            key_bytes
+        ).decode("ascii")
 
-        k_b64 = base64.b64encode(k_bytes).decode("ascii")
-        e_b64 = base64.b64encode(e_bytes).decode("ascii")
+        encrypted_b64 = base64.b64encode(
+            encrypted_bytes
+        ).decode("ascii")
 
-        L = len(k_b64 + e_b64)
-        M_prime = f"{L}:{k_b64}:{e_b64}"
-        return M_prime
+        length_tag = len(
+            key_b64 + encrypted_b64
+        )
 
-    def recover_message_from_secret(self, secret_str: str) -> str:
-        """
-        M' -> M (verify hash, decrypt).
-        """
+        secret = (
+            f"{self.cipher.name}:"
+            f"{length_tag}:"
+            f"{key_b64}:"
+            f"{encrypted_b64}"
+        )
+
+        return secret
+
+    def recover_message_from_secret(
+        self,
+        secret_str: str
+    ) -> str:
+
         try:
-            L_str, k_b64, e_b64 = secret_str.split(":", 2)
+            algo_name, length_str, key_b64, encrypted_b64 = (
+                secret_str.split(":", 3)
+            )
+
         except ValueError:
-            raise ValueError("Invalid secret format (expected 'L:K_b64:E_b64').")
+            raise ValueError(
+                "Invalid secret format."
+            )
 
-        L = int(L_str)
-        if len(k_b64 + e_b64) != L:
-            raise ValueError("Length tag L does not match K_b64+E_b64 length.")
+        if algo_name != self.cipher.name:
+            raise ValueError(
+                f"Expected algorithm "
+                f"{self.cipher.name}, "
+                f"got {algo_name}"
+            )
 
-        k_bytes = base64.b64decode(k_b64)
-        e_bytes = base64.b64decode(e_b64)
+        expected_length = int(length_str)
 
-        if len(e_bytes) < self.nonce_size:
-            raise ValueError("Invalid E: too short to contain nonce.")
+        if len(key_b64 + encrypted_b64) != expected_length:
+            raise ValueError(
+                "Length tag mismatch."
+            )
 
-        nonce = e_bytes[:self.nonce_size]
-        ct = e_bytes[self.nonce_size:]
+        key_bytes = base64.b64decode(
+            key_b64
+        )
 
-        aesgcm = AESGCM(k_bytes)
-        plaintext = aesgcm.decrypt(nonce, ct, None)
+        encrypted_bytes = base64.b64decode(
+            encrypted_b64
+        )
 
-        if len(plaintext) < 32:
-            raise ValueError("Invalid plaintext: too short for SHA-256 hash.")
+        plaintext = self.cipher.decrypt(
+            key_bytes,
+            encrypted_bytes
+        )
 
-        h_stored = plaintext[:32]
-        m_bytes = plaintext[32:]
+        if len(plaintext) < self.HASH_SIZE:
+            raise ValueError(
+                "Plaintext too short."
+            )
 
-        h_calc = self._sha256(m_bytes)
-        if h_calc != h_stored:
-            raise ValueError("Hash mismatch: data corrupted or tampered.")
+        stored_hash = plaintext[:self.HASH_SIZE]
 
-        return m_bytes.decode("utf-8")
+        message_bytes = plaintext[self.HASH_SIZE:]
+
+        calculated_hash = self._sha256(
+            message_bytes
+        )
+
+        if stored_hash != calculated_hash:
+            raise ValueError(
+                "Hash verification failed."
+            )
+
+        return message_bytes.decode(
+            "utf-8"
+        )

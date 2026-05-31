@@ -1,5 +1,9 @@
 import argparse
-from secret_scheme import CryptoLayer, BitCombinations
+from secret_scheme import BitCombinations
+
+from secret_scheme.crypto_layer import CryptoLayer
+# from secret_scheme.crypto import AESGCMCipher
+from secret_scheme.crypto import ChaCha20Cipher
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Secret sharing using k,n,m parameters")
@@ -19,9 +23,13 @@ def parse_args():
 def main():
     args = parse_args()
 
+    # NOTE: change the stdin
     original_message = "this is my super hey hey hey secret message"
 
-    crypto = CryptoLayer()
+    crypto = CryptoLayer(
+        # AESGCMCipher()
+        ChaCha20Cipher()
+    )
     M_prime = crypto.build_secret_for_sharing(original_message)
     print("M' (for sharing):", M_prime)
 
