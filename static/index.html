@@ -83,14 +83,14 @@
             overflow-y: auto;
         }
         .error { background: #f8d7da; border-left-color: #dc3545; color: #721c24; }
-        .loading { 
-            display: inline-block; 
-            width: 20px; 
-            height: 20px; 
-            border: 3px solid #f3f3f3; 
-            border-top: 3px solid #667eea; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .row { display: flex; gap: 15px; }
@@ -127,9 +127,9 @@
     <div class="container">
         <div class="header">
             <h1>🔐 Secret Sharing System</h1>
-            <p>Shamir's Secret Sharing with Mandatory Shares</p>
+            <p>BNB Secret Sharing with Mandatory Shares & Steganography</p>
         </div>
-        
+
         <div class="grid">
             <!-- Generate Section -->
             <div class="card">
@@ -156,7 +156,13 @@
                         <input type="number" id="gen-m" value="1" min="0">
                     </div>
                 </div>
-                
+
+                <div class="form-group">
+                    <label>Carrier Image (optional - uses default if not provided)</label>
+                    <input type="file" id="carrier-image" accept="image/png,image/jpeg">
+                    <small style="color: #666;">Upload a PNG/JPEG image to hide shares in. If not provided, a default image will be used.</small>
+                </div>
+
                 <div class="form-group">
                     <label>Encryption Algorithm</label>
                     <select id="gen-cipher">
@@ -164,22 +170,22 @@
                         <option value="aes">AES-256-GCM</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Secret Message</label>
                     <textarea id="secret-text" rows="4" placeholder="Enter your secret message here..."></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Or Upload Secret File</label>
                     <input type="file" id="secret-file">
                 </div>
-                
+
                 <button onclick="generateShares()">🚀 Generate Shares</button>
-                
+
                 <div id="gen-result"></div>
             </div>
-            
+
             <!-- Reconstruct Section -->
             <div class="card">
                 <h2>🔓 Reconstruct Secret</h2>
@@ -199,7 +205,7 @@
                         <input type="number" id="rec-m" value="1">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Encryption Algorithm</label>
                     <select id="rec-cipher">
@@ -207,7 +213,7 @@
                         <option value="aes">AES-256-GCM</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Upload Share Images (select multiple files)</label>
                     <input type="file" id="share-files" multiple accept="image/png" onchange="updateFileList()">
@@ -216,68 +222,69 @@
                     </div>
                     <small style="color: #666;">Select any k share files (must include all mandatory shares)</small>
                 </div>
-                
+
                 <button onclick="reconstructSecret()">🔓 Reconstruct Secret</button>
-                
+
                 <div id="rec-result"></div>
             </div>
         </div>
     </div>
-    
+
     <script>
         function updateFileList() {
             const files = document.getElementById('share-files').files;
             const fileListDiv = document.getElementById('file-list');
             const k = parseInt(document.getElementById('rec-k').value);
-            
+
             if (files.length === 0) {
                 fileListDiv.innerHTML = '<small>No files selected</small>';
                 return;
             }
-            
+
             let html = '<strong>Selected files (' + files.length + '):</strong><br>';
             for (let i = 0; i < files.length; i++) {
                 html += `<span>${files[i].name}</span>`;
             }
-            
+
             if (files.length < k) {
                 html += `<br><span style="color: #ffc107;">⚠️ Warning: Need at least ${k} shares</span>`;
             } else {
                 html += `<br><span style="color: #28a745;">✅ Ready to reconstruct</span>`;
             }
-            
+
             fileListDiv.innerHTML = html;
         }
-        
+
         async function generateShares() {
             const k = parseInt(document.getElementById('gen-k').value);
             const n = parseInt(document.getElementById('gen-n').value);
             const m = parseInt(document.getElementById('gen-m').value);
             let secret = document.getElementById('secret-text').value;
-            const file = document.getElementById('secret-file').files[0];
-            
-            if (!secret && !file) {
+            const secretFile = document.getElementById('secret-file').files[0];
+            const carrierFile = document.getElementById('carrier-image').files[0];
+
+            if (!secret && !secretFile) {
                 alert('Please enter a secret or upload a file');
                 return;
             }
-            
-            if (file) {
-                secret = await file.text();
+
+            if (secretFile) {
+                secret = await secretFile.text();
                 document.getElementById('secret-text').value = secret;
             }
-            
+
             if (m > k) {
                 alert('m (mandatory shares) cannot be greater than k (minimum shares)');
                 return;
             }
-            
+
             if (k > n) {
                 alert('k (minimum shares) cannot be greater than n (total shares)');
                 return;
             }
-            
+
             document.getElementById('gen-result').innerHTML = '<div class="loading"></div> Generating shares...';
-            
+
             try {
                 const formData = new FormData();
                 formData.append('k', k);
@@ -285,13 +292,17 @@
                 formData.append('m', m);
                 formData.append('secret', secret);
                 
+                if (carrierFile) {
+                    formData.append('carrier', carrierFile);
+                }
+
                 const response = await fetch('/api/generate', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     let html = '<div class="share-list"><h3>📦 Generated Shares:</h3>';
                     for (const share of data.shares) {
@@ -318,35 +329,35 @@
                 document.getElementById('gen-result').innerHTML = `<div class="result error">❌ Error: ${err.message}</div>`;
             }
         }
-        
+
         async function reconstructSecret() {
             const k = parseInt(document.getElementById('rec-k').value);
             const m = parseInt(document.getElementById('rec-m').value);
             const files = document.getElementById('share-files').files;
-            
+
             if (files.length < k) {
                 alert(`Need at least ${k} shares, but only ${files.length} selected`);
                 return;
             }
-            
+
             const formData = new FormData();
             formData.append('k', k.toString());
             formData.append('m', m.toString());
-            
+
             for (let i = 0; i < files.length; i++) {
                 formData.append('shares', files[i]);
             }
-            
+
             document.getElementById('rec-result').innerHTML = '<div class="loading"></div> Reconstructing secret...';
-            
+
             try {
                 const response = await fetch('/api/reconstruct', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     document.getElementById('rec-result').innerHTML = `
                         <div class="result">
@@ -361,13 +372,13 @@
                 document.getElementById('rec-result').innerHTML = `<div class="result error">❌ Error: ${err.message}</div>`;
             }
         }
-        
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-        
+
         document.getElementById('gen-k').addEventListener('change', function() {
             const k = parseInt(this.value);
             const n = parseInt(document.getElementById('gen-n').value);

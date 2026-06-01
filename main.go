@@ -482,75 +482,173 @@ func (s *Server) setupRoutes() {
 }
 
 func (s *Server) handleGenerate(c *gin.Context) {
-    kStr := c.PostForm("k")
-    nStr := c.PostForm("n")
-    mStr := c.PostForm("m")
-    secret := c.PostForm("secret")
+	kStr := c.PostForm("k")
+	nStr := c.PostForm("n")
+	mStr := c.PostForm("m")
+	secret := c.PostForm("secret")
 
-    k, _ := strconv.Atoi(kStr)
-    n, _ := strconv.Atoi(nStr)
-    m, _ := strconv.Atoi(mStr)
+	k, _ := strconv.Atoi(kStr)
+	n, _ := strconv.Atoi(nStr)
+	m, _ := strconv.Atoi(mStr)
 
-    log.Printf("Generating: k=%d, n=%d, m=%d", k, n, m)
+	log.Printf("Generating: k=%d, n=%d, m=%d", k, n, m)
 
-    // Encrypt secret
-    cipher := NewChaCha20Cipher()
-    cryptoLayer := NewCryptoLayer(cipher)
-    encryptedSecret, err := cryptoLayer.BuildSecretForSharing(secret)
-    if err != nil {
-        c.JSON(500, gin.H{"error": err.Error()})
-        return
-    }
+	// Encrypt secret
+	cipher := NewChaCha20Cipher()
+	cryptoLayer := NewCryptoLayer(cipher)
+	encryptedSecret, err := cryptoLayer.BuildSecretForSharing(secret)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
 
-    // Convert to bits
-    secretBits := stringToBits(encryptedSecret)
+	// Convert to bits
+	secretBits := stringToBits(encryptedSecret)
 
-    // Generate shares using BNB scheme
-    bnb := NewBNBSecretSharing(k, n, m)
-    shares, err := bnb.GenerateShares(secretBits)
-    if err != nil {
-        c.JSON(500, gin.H{"error": err.Error()})
-        return
-    }
+	// Generate shares using BNB scheme
+	bnb := NewBNBSecretSharing(k, n, m)
+	shares, err := bnb.GenerateShares(secretBits)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
 
-    // Default carrier image
-    carrierImg := "./static/input.png"
-    if _, err := os.Stat(carrierImg); os.IsNotExist(err) {
-        s.createDefaultImage(carrierImg)
-    }
+	// Handle carrier image - user uploaded or default
+	var carrierImg string
+	file, header, err := c.Request.FormFile("carrier")
+	if err == nil {
+		// User uploaded a carrier image
+		defer file.Close()
+		
+		// Validate file type
+		ext := strings.ToLower(filepath.Ext(header.Filename))
+		if ext != ".png" && ext != ".jpg" && ext != ".jpeg" {
+			c.JSON(400, gin.H{"error": "Carrier image must be PNG or JPEG"})
+			return
+		}
+		
+		// Save uploaded carrier temporarily
+		carrierImg = filepath.Join(s.uploads, "carrier_"+header.Filename)
+		out, err := os.Create(carrierImg)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to save carrier image"})
+			return
+		}
+		defer out.Close()
+		io.Copy(out, file)
+		log.Printf("Using uploaded carrier image: %s", header.Filename)
+	} else {
+		// Use default carrier image
+		carrierImg = "./static/input.png"
+		if _, err := os.Stat(carrierImg); os.IsNotExist(err) {
+			s.createDefaultImage(carrierImg)
+		}
+		log.Println("Using default carrier image")
+	}
 
-    // Clear previous shares
-    os.RemoveAll(s.shares)
-    os.MkdirAll(s.shares, 0755)
+	// Clear previous shares
+	os.RemoveAll(s.shares)
+	os.MkdirAll(s.shares, 0755)
 
-    response := struct {
-        Shares []struct {
-            ID        int    `json:"id"`
-            Mandatory bool   `json:"mandatory"`
-            URL       string `json:"url"`
-        } `json:"shares"`
-    }{}
+	response := struct {
+		Shares []struct {
+			ID        int    `json:"id"`
+			Mandatory bool   `json:"mandatory"`
+			URL       string `json:"url"`
+		} `json:"shares"`
+	}{}
 
-    for i, share := range shares {
-        isMandatory := i < m
-        filename := fmt.Sprintf("share_%d.png", i)
-        filepath := filepath.Join(s.shares, filename)
+	for i, share := range shares {
+		isMandatory := i < m
+		filename := fmt.Sprintf("share_%d.png", i)
+		filepath := filepath.Join(s.shares, filename)
 
-        if err := EmbedShareInImage(share, carrierImg, filepath, isMandatory); err != nil {
-            c.JSON(500, gin.H{"error": err.Error()})
-            return
-        }
+		if err := EmbedShareInImage(share, carrierImg, filepath, isMandatory); err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
 
-        response.Shares = append(response.Shares, struct {
-            ID        int    `json:"id"`
-            Mandatory bool   `json:"mandatory"`
-            URL       string `json:"url"`
-        }{ID: i, Mandatory: isMandatory, URL: "/api/download/" + filename})
-    }
+		response.Shares = append(response.Shares, struct {
+			ID        int    `json:"id"`
+			Mandatory bool   `json:"mandatory"`
+			URL       string `json:"url"`
+		}{ID: i, Mandatory: isMandatory, URL: "/api/download/" + filename})
+	}
 
-    log.Printf("Generated %d shares successfully", len(shares))
-    c.JSON(200, response)
+	log.Printf("Generated %d shares successfully", len(shares))
+	c.JSON(200, response)
 }
+
+// func (s *Server) handleGenerate(c *gin.Context) {
+//     kStr := c.PostForm("k")
+//     nStr := c.PostForm("n")
+//     mStr := c.PostForm("m")
+//     secret := c.PostForm("secret")
+//
+//     k, _ := strconv.Atoi(kStr)
+//     n, _ := strconv.Atoi(nStr)
+//     m, _ := strconv.Atoi(mStr)
+//
+//     log.Printf("Generating: k=%d, n=%d, m=%d", k, n, m)
+//
+//     // Encrypt secret
+//     cipher := NewChaCha20Cipher()
+//     cryptoLayer := NewCryptoLayer(cipher)
+//     encryptedSecret, err := cryptoLayer.BuildSecretForSharing(secret)
+//     if err != nil {
+//         c.JSON(500, gin.H{"error": err.Error()})
+//         return
+//     }
+//
+//     // Convert to bits
+//     secretBits := stringToBits(encryptedSecret)
+//
+//     // Generate shares using BNB scheme
+//     bnb := NewBNBSecretSharing(k, n, m)
+//     shares, err := bnb.GenerateShares(secretBits)
+//     if err != nil {
+//         c.JSON(500, gin.H{"error": err.Error()})
+//         return
+//     }
+//
+//     // Default carrier image
+//     carrierImg := "./static/input.png"
+//     if _, err := os.Stat(carrierImg); os.IsNotExist(err) {
+//         s.createDefaultImage(carrierImg)
+//     }
+//
+//     // Clear previous shares
+//     os.RemoveAll(s.shares)
+//     os.MkdirAll(s.shares, 0755)
+//
+//     response := struct {
+//         Shares []struct {
+//             ID        int    `json:"id"`
+//             Mandatory bool   `json:"mandatory"`
+//             URL       string `json:"url"`
+//         } `json:"shares"`
+//     }{}
+//
+//     for i, share := range shares {
+//         isMandatory := i < m
+//         filename := fmt.Sprintf("share_%d.png", i)
+//         filepath := filepath.Join(s.shares, filename)
+//
+//         if err := EmbedShareInImage(share, carrierImg, filepath, isMandatory); err != nil {
+//             c.JSON(500, gin.H{"error": err.Error()})
+//             return
+//         }
+//
+//         response.Shares = append(response.Shares, struct {
+//             ID        int    `json:"id"`
+//             Mandatory bool   `json:"mandatory"`
+//             URL       string `json:"url"`
+//         }{ID: i, Mandatory: isMandatory, URL: "/api/download/" + filename})
+//     }
+//
+//     log.Printf("Generated %d shares successfully", len(shares))
+//     c.JSON(200, response)
+// }
 
 func (s *Server) handleReconstruct(c *gin.Context) {
     kStr := c.PostForm("k")
