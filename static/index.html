@@ -1,391 +1,667 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secret Sharing System</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; color: white; margin-bottom: 40px; }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        .card h2 { color: #333; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        textarea { resize: vertical; font-family: monospace; }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-        button:hover { transform: translateY(-2px); }
-        .share-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .share-item {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-        .share-item.mandatory { background: #fff3cd; border-color: #ffc107; }
-        .share-item a {
-            color: white;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 15px;
-            background: #667eea;
-            border-radius: 5px;
-        }
-        .result {
-            background: #f8f9fa;
-            border-left: 4px solid #28a745;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .error { background: #f8d7da; border-left-color: #dc3545; color: #721c24; }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .row { display: flex; gap: 15px; }
-        .row .form-group { flex: 1; }
-        .success { color: #28a745; font-weight: bold; margin-top: 10px; }
-        .info-box {
-            background: #e7f3ff;
-            border-left: 4px solid #2196f3;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .file-list {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-size: 12px;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-        .file-list span {
-            display: inline-block;
-            background: #e9ecef;
-            padding: 2px 8px;
-            margin: 2px;
-            border-radius: 4px;
-        }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🔐 Secret Sharing System</h1>
-            <p>BNB Secret Sharing with Mandatory Shares & Steganography</p>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.pg{background:#F5F0E8;font-family:'Inter',sans-serif;padding:0 0 40px}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid #D8D2C4;background:#F5F0E8}
+.nav-brand{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:#1a1a1a;letter-spacing:0.02em}
+.nav-brand span{color:#888}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-link{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#555;text-decoration:none;cursor:pointer}
+.nav-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;background:#1a1a1a;color:#F5F0E8;border:none;padding:8px 18px;cursor:pointer;text-decoration:none;}
+.hero{padding:48px 32px 36px;border-bottom:1px solid #D8D2C4}
+.hero-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#888;margin-bottom:14px}
+.hero-title{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;line-height:1.0;color:#1a1a1a;margin-bottom:28px;max-width:460px}
+.hero-title em{font-style:normal;background:#1a1a1a;color:#F5F0E8;padding:2px 6px}
+.hero-body{font-size:14px;color:#555;line-height:1.7;max-width:420px;margin-bottom:28px}
+.hero-code{display:flex;align-items:center;gap:12px;background:#1a1a1a;padding:12px 18px;max-width:420px;margin-bottom:0}
+.hero-code-prompt{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#666}
+.hero-code-cmd{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#e8e0d0;flex:1}
+.section-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#888;margin-bottom:12px}
+.main{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid #D8D2C4}
+.panel{padding:32px;border-right:1px solid #D8D2C4}
+.panel:last-child{border-right:none}
+.panel-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:6px}
+.panel-desc{font-size:12px;color:#888;line-height:1.6;margin-bottom:24px;font-family:'IBM Plex Mono',monospace}
+.notice{background:#EDE8DE;border-left:3px solid #1a1a1a;padding:11px 14px;margin-bottom:22px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#555;line-height:1.7}
+.notice strong{color:#1a1a1a;display:block;margin-bottom:4px;font-size:11px}
+.params-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px}
+.params-row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.fg{margin-bottom:16px}
+.lbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#888;margin-bottom:6px}
+.lbl em{font-style:normal;color:#aaa;font-size:10px}
+input[type=number],input[type=file],select,textarea{width:100%;background:#EDE8DE;border:1px solid #D0C9BC;border-radius:0;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#1a1a1a;padding:8px 10px;outline:none}
+input[type=number]:focus,select:focus,textarea:focus{border-color:#1a1a1a}
+select{cursor:pointer}
+textarea{resize:vertical;line-height:1.6;min-height:80px}
+input[type=file]{font-size:11px;padding:6px 10px;cursor:pointer}
+.hint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#aaa;margin-top:5px;display:block}
+.divider{border:none;border-top:1px solid #D8D2C4;margin:20px 0}
+.action-btn{width:100%;background:#1a1a1a;color:#F5F0E8;border:none;padding:13px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s}
+.action-btn:hover{background:#333}
+.result-area{margin-top:18px;display:none}
+.result-box{background:#EDE8DE;border:1px solid #D0C9BC;padding:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#1a1a1a;line-height:1.7}
+.result-success{border-left:3px solid #2a7a4f;background:#e8f2ec}
+.result-error{border-left:3px solid #a32d2d;background:#f9eaea;color:#a32d2d}
+.shares-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:10px}
+.share-tile{background:#1a1a1a;color:#e8e0d0;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace}
+.share-tile.mand{background:#2a1a00;border:1px solid #BA7517}
+.share-tile-id{font-size:13px;font-weight:500;display:block;margin-bottom:2px}
+.share-tile-type{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;display:block;margin-bottom:7px}
+.share-tile-type.mand{color:#EF9F27;opacity:1}
+.share-tile a{font-size:10px;color:#9FE1CB;text-decoration:none;letter-spacing:0.06em}
+.ok-msg{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#2a7a4f;margin-top:8px}
+.err-msg{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#a32d2d;margin-top:8px}
+.file-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.file-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;background:#1a1a1a;color:#e8e0d0;padding:3px 7px;letter-spacing:0.05em}
+.spinner{width:13px;height:13px;border:2px solid #555;border-top-color:#e8e0d0;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.secret-out{font-family:'IBM Plex Mono',monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;color:#1a1a1a;line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid #D0C9BC}
+</style>
+
+<div class="pg">
+  <!-- <h2 class="sr-only">Secret sharing system — split and reconstruct secrets using cryptographic shares</h2> -->
+
+  <!-- <nav class="nav"> -->
+  <!--   <span class="nav-brand">SECRET <span>/</span> SHARE</span> -->
+  <!--   <div class="nav-links"> -->
+  <!--     <button class="nav-btn">Github</button> -->
+  <!--   </div> -->
+  <!-- </nav> -->
+
+  <nav class="nav">
+  <span class="nav-brand">SECRET <span>/</span> SHARE</span>
+
+  <div class="nav-links">
+    <a href="https://github.com/ankushT369/research-project" class="nav-btn">
+      Github
+    </a>
+  </div>
+</nav>
+
+  <div class="hero">
+    <p class="hero-eyebrow">Cryptographic secret sharing</p>
+    <h1 class="hero-title">split the secret.<br><br> <em>lose the risk.</em></h1>
+    <!-- <p class="hero-body">BNB secret sharing with mandatory shares and steganography. Any k shares that include all mandatory shares can reconstruct the original secret.</p> -->
+   <!-- <div class="hero-code"> -->
+    <!--   <span class="hero-code-prompt">$</span> -->
+    <!--   <span class="hero-code-cmd">encrypt --cipher chacha20-poly1305 --shares 5 --threshold 3</span> -->
+    <!-- </div> -->
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <p class="section-label">Step 01</p>
+      <p class="panel-title">Generate shares</p>
+      <p class="panel-desc">Split your secret into n shares with a k-of-n threshold scheme.</p>
+
+      <div class="notice">
+        <strong>Parameters</strong>
+        k = min shares to reconstruct &nbsp;|&nbsp; n = total shares &nbsp;|&nbsp; m = mandatory shares
+      </div>
+
+      <div class="params-row">
+        <div>
+          <label class="lbl">k <em>(threshold)</em></label>
+          <input type="number" id="gen-k" value="3" min="1">
         </div>
-
-        <div class="grid">
-            <!-- Generate Section -->
-            <div class="card">
-                <h2>📤 Generate Shares</h2>
-                <div class="info-box">
-                    <strong>ℹ️ How it works:</strong><br>
-                    - <strong>k</strong> = minimum number of shares needed to reconstruct the secret<br>
-                    - <strong>n</strong> = total number of shares to generate<br>
-                    - <strong>m</strong> = number of mandatory shares (must be included in reconstruction)<br>
-                    <br>
-                    <strong>Any k shares that include all m mandatory shares can reconstruct the secret!</strong>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>k (minimum shares needed)</label>
-                        <input type="number" id="gen-k" value="3" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>n (total shares)</label>
-                        <input type="number" id="gen-n" value="5" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>m (mandatory shares)</label>
-                        <input type="number" id="gen-m" value="1" min="0">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Carrier Image (optional - uses default if not provided)</label>
-                    <input type="file" id="carrier-image" accept="image/png,image/jpeg">
-                    <small style="color: #666;">Upload a PNG/JPEG image to hide shares in. If not provided, a default image will be used.</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Encryption Algorithm</label>
-                    <select id="gen-cipher">
-                        <option value="chacha">ChaCha20-Poly1305</option>
-                        <option value="aes">AES-256-GCM</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Secret Message</label>
-                    <textarea id="secret-text" rows="4" placeholder="Enter your secret message here..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Or Upload Secret File</label>
-                    <input type="file" id="secret-file">
-                </div>
-
-                <button onclick="generateShares()">🚀 Generate Shares</button>
-
-                <div id="gen-result"></div>
-            </div>
-
-            <!-- Reconstruct Section -->
-            <div class="card">
-                <h2>🔓 Reconstruct Secret</h2>
-                <div class="info-box">
-                    <strong>⚠️ Important:</strong><br>
-                    - Upload ANY k shares (must include all m mandatory shares)<br>
-                    - The shares can be in any order<br>
-                    - The system will automatically detect mandatory shares
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>k (minimum shares needed)</label>
-                        <input type="number" id="rec-k" value="3">
-                    </div>
-                    <div class="form-group">
-                        <label>m (mandatory shares)</label>
-                        <input type="number" id="rec-m" value="1">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Encryption Algorithm</label>
-                    <select id="rec-cipher">
-                        <option value="chacha">ChaCha20-Poly1305</option>
-                        <option value="aes">AES-256-GCM</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Upload Share Images (select multiple files)</label>
-                    <input type="file" id="share-files" multiple accept="image/png" onchange="updateFileList()">
-                    <div class="file-list" id="file-list">
-                        <small>No files selected</small>
-                    </div>
-                    <small style="color: #666;">Select any k share files (must include all mandatory shares)</small>
-                </div>
-
-                <button onclick="reconstructSecret()">🔓 Reconstruct Secret</button>
-
-                <div id="rec-result"></div>
-            </div>
+        <div>
+          <label class="lbl">n <em>(total)</em></label>
+          <input type="number" id="gen-n" value="5" min="1">
         </div>
+        <div>
+          <label class="lbl">m <em>(mandatory)</em></label>
+          <input type="number" id="gen-m" value="1" min="0">
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Carrier image <em>(optional)</em></label>
+        <input type="file" id="carrier-image" accept="image/png,image/jpeg">
+        <span class="hint">PNG or JPEG. Default used if none provided.</span>
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Encryption algorithm</label>
+        <select id="gen-cipher">
+          <option value="chacha">ChaCha20-Poly1305</option>
+          <option value="aes">AES-256-GCM</option>
+        </select>
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Secret message</label>
+        <textarea id="secret-text" rows="4" placeholder="Enter your secret message..."></textarea>
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Or upload a file</label>
+        <input type="file" id="secret-file">
+      </div>
+
+      <button class="action-btn" onclick="generateShares()">
+        <i class="ti ti-share" style="font-size:14px" aria-hidden="true"></i>
+        Generate shares
+      </button>
+
+      <div id="gen-result" class="result-area"></div>
     </div>
 
-    <script>
-        function updateFileList() {
-            const files = document.getElementById('share-files').files;
-            const fileListDiv = document.getElementById('file-list');
-            const k = parseInt(document.getElementById('rec-k').value);
+    <div class="panel">
+      <p class="section-label">Step 02</p>
+      <p class="panel-title">Reconstruct secret</p>
+      <p class="panel-desc">Upload k share images — all mandatory shares must be present.</p>
 
-            if (files.length === 0) {
-                fileListDiv.innerHTML = '<small>No files selected</small>';
-                return;
-            }
+      <div class="notice">
+        <strong>Before you start</strong>
+        Mandatory shares must be included. Order does not matter. System auto-detects share types.
+      </div>
 
-            let html = '<strong>Selected files (' + files.length + '):</strong><br>';
-            for (let i = 0; i < files.length; i++) {
-                html += `<span>${files[i].name}</span>`;
-            }
+      <div class="params-row-2">
+        <div>
+          <label class="lbl">k <em>(threshold)</em></label>
+          <input type="number" id="rec-k" value="3">
+        </div>
+        <div>
+          <label class="lbl">m <em>(mandatory)</em></label>
+          <input type="number" id="rec-m" value="1">
+        </div>
+      </div>
 
-            if (files.length < k) {
-                html += `<br><span style="color: #ffc107;">⚠️ Warning: Need at least ${k} shares</span>`;
-            } else {
-                html += `<br><span style="color: #28a745;">✅ Ready to reconstruct</span>`;
-            }
+      <div class="fg">
+        <label class="lbl">Encryption algorithm</label>
+        <select id="rec-cipher">
+          <option value="chacha">ChaCha20-Poly1305</option>
+          <option value="aes">AES-256-GCM</option>
+        </select>
+      </div>
 
-            fileListDiv.innerHTML = html;
-        }
+      <div class="fg">
+        <label class="lbl">Upload share images</label>
+        <input type="file" id="share-files" multiple accept="image/png" onchange="updateFileList()">
+        <div id="file-list" class="file-tags"><span class="hint">No files selected</span></div>
+        <span class="hint">Select any k PNG share files</span>
+      </div>
 
-        async function generateShares() {
-            const k = parseInt(document.getElementById('gen-k').value);
-            const n = parseInt(document.getElementById('gen-n').value);
-            const m = parseInt(document.getElementById('gen-m').value);
-            let secret = document.getElementById('secret-text').value;
-            const secretFile = document.getElementById('secret-file').files[0];
-            const carrierFile = document.getElementById('carrier-image').files[0];
+      <hr class="divider">
 
-            if (!secret && !secretFile) {
-                alert('Please enter a secret or upload a file');
-                return;
-            }
+      <button class="action-btn" onclick="reconstructSecret()">
+        <i class="ti ti-lock-open" style="font-size:14px" aria-hidden="true"></i>
+        Reconstruct secret
+      </button>
 
-            if (secretFile) {
-                secret = await secretFile.text();
-                document.getElementById('secret-text').value = secret;
-            }
+      <div id="rec-result" class="result-area"></div>
+    </div>
+  </div>
+</div>
 
-            if (m > k) {
-                alert('m (mandatory shares) cannot be greater than k (minimum shares)');
-                return;
-            }
+<script>
+function updateFileList(){
+  const files=document.getElementById('share-files').files;
+  const k=parseInt(document.getElementById('rec-k').value);
+  const el=document.getElementById('file-list');
+  if(!files.length){el.innerHTML='<span class="hint">No files selected</span>';return;}
+  let h='';
+  for(let f of files)h+=`<span class="file-tag">${f.name}</span>`;
+  if(files.length<k)h+=`<span class="hint" style="color:#BA7517;width:100%">Need at least ${k} shares (${files.length} selected)</span>`;
+  el.innerHTML=h;
+}
 
-            if (k > n) {
-                alert('k (minimum shares) cannot be greater than n (total shares)');
-                return;
-            }
+function showLoad(id,msg){
+  const el=document.getElementById(id);
+  el.style.display='block';
+  el.innerHTML=`<div class="result-box" style="display:flex;align-items:center;gap:10px"><span class="spinner"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#888">${msg}</span></div>`;
+}
 
-            document.getElementById('gen-result').innerHTML = '<div class="loading"></div> Generating shares...';
+async function generateShares(){
+  const k=parseInt(document.getElementById('gen-k').value);
+  const n=parseInt(document.getElementById('gen-n').value);
+  const m=parseInt(document.getElementById('gen-m').value);
+  let secret=document.getElementById('secret-text').value;
+  const sf=document.getElementById('secret-file').files[0];
+  const cf=document.getElementById('carrier-image').files[0];
+  if(!secret&&!sf){alert('Enter a secret message or upload a file.');return;}
+  if(m>k){alert('m (mandatory) cannot exceed k (threshold).');return;}
+  if(k>n){alert('k (threshold) cannot exceed n (total shares).');return;}
+  if(sf){secret=await sf.text();document.getElementById('secret-text').value=secret;}
+  showLoad('gen-result','Generating shares...');
+  try{
+    const fd=new FormData();
+    fd.append('k',k);fd.append('n',n);fd.append('m',m);fd.append('secret',secret);
+    if(cf)fd.append('carrier',cf);
+    const res=await fetch('/api/generate',{method:'POST',body:fd});
+    const data=await res.json();
+    const el=document.getElementById('gen-result');
+    if(res.ok){
+      let h='<div class="shares-grid">';
+      for(const s of data.shares){
+        const isMand=s.mandatory;
+        h+=`<div class="share-tile ${isMand?'mand':''}">
+          <span class="share-tile-id">Share ${s.id}</span>
+          <span class="share-tile-type ${isMand?'mand':''}">${isMand?'Mandatory':'Normal'}</span>
+          <a href="${s.url}" download="${s.url.split('/').pop()}"><i class="ti ti-download" style="font-size:11px"></i> Download</a>
+        </div>`;
+      }
+      h+=`</div><p class="ok-msg"><i class="ti ti-check" style="font-size:11px"></i> ${n} shares generated. Any ${k} (including ${m} mandatory) reconstruct the secret.</p>`;
+      el.innerHTML=h;
+    }else{
+      el.innerHTML=`<p class="err-msg">${data.error||'Generation failed.'}</p>`;
+    }
+  }catch(e){document.getElementById('gen-result').innerHTML=`<p class="err-msg">${e.message}</p>`;}
+}
 
-            try {
-                const formData = new FormData();
-                formData.append('k', k);
-                formData.append('n', n);
-                formData.append('m', m);
-                formData.append('secret', secret);
-                
-                if (carrierFile) {
-                    formData.append('carrier', carrierFile);
-                }
+async function reconstructSecret(){
+  const k=parseInt(document.getElementById('rec-k').value);
+  const m=parseInt(document.getElementById('rec-m').value);
+  const files=document.getElementById('share-files').files;
+  if(files.length<k){alert(`Need at least ${k} shares. ${files.length} selected.`);return;}
+  showLoad('rec-result','Reconstructing secret...');
+  try{
+    const fd=new FormData();
+    fd.append('k',k);fd.append('m',m);
+    for(let f of files)fd.append('shares',f);
+    const res=await fetch('/api/reconstruct',{method:'POST',body:fd});
+    const data=await res.json();
+    const el=document.getElementById('rec-result');
+    if(res.ok){
+      const safe=document.createElement('div');safe.textContent=data.secret;
+      el.innerHTML=`<div class="result-box result-success"><p style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#2a7a4f;margin-bottom:4px">Secret recovered</p><div class="secret-out">${safe.innerHTML}</div></div>`;
+    }else{
+      el.innerHTML=`<p class="err-msg">${data.error||'Reconstruction failed.'}</p>`;
+    }
+  }catch(e){document.getElementById('rec-result').innerHTML=`<p class="err-msg">${e.message}</p>`;}
+}
+</script>
 
-                const response = await fetch('/api/generate', {
-                    method: 'POST',
-                    body: formData
-                });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    let html = '<div class="share-list"><h3>📦 Generated Shares:</h3>';
-                    for (const share of data.shares) {
-                        const mandatoryClass = share.mandatory ? 'mandatory' : '';
-                        const mandatoryText = share.mandatory ? '🔴 MANDATORY' : '⚪ NORMAL';
-                        html += `
-                            <div class="share-item ${mandatoryClass}">
-                                <strong>Share ${share.id}</strong><br>
-                                ${mandatoryText}<br>
-                                <a href="${share.url}" download="${share.url.split('/').pop()}">
-                                    ⬇️ Download PNG
-                                </a>
-                            </div>
-                        `;
-                    }
-                    html += '</div>';
-                    html += `<div class="success">✅ ${n} shares generated!<br>
-                    Any ${k} shares (including the ${m} mandatory shares) can reconstruct the secret.</div>`;
-                    document.getElementById('gen-result').innerHTML = html;
-                } else {
-                    document.getElementById('gen-result').innerHTML = `<div class="result error">❌ Error: ${data.error}</div>`;
-                }
-            } catch (err) {
-                document.getElementById('gen-result').innerHTML = `<div class="result error">❌ Error: ${err.message}</div>`;
-            }
-        }
-
-        async function reconstructSecret() {
-            const k = parseInt(document.getElementById('rec-k').value);
-            const m = parseInt(document.getElementById('rec-m').value);
-            const files = document.getElementById('share-files').files;
-
-            if (files.length < k) {
-                alert(`Need at least ${k} shares, but only ${files.length} selected`);
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('k', k.toString());
-            formData.append('m', m.toString());
-
-            for (let i = 0; i < files.length; i++) {
-                formData.append('shares', files[i]);
-            }
-
-            document.getElementById('rec-result').innerHTML = '<div class="loading"></div> Reconstructing secret...';
-
-            try {
-                const response = await fetch('/api/reconstruct', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    document.getElementById('rec-result').innerHTML = `
-                        <div class="result">
-                            <strong>✅ Secret Recovered Successfully!</strong><br><br>
-                            <pre style="white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(data.secret)}</pre>
-                        </div>
-                    `;
-                } else {
-                    document.getElementById('rec-result').innerHTML = `<div class="result error">❌ Error: ${data.error}</div>`;
-                }
-            } catch (err) {
-                document.getElementById('rec-result').innerHTML = `<div class="result error">❌ Error: ${err.message}</div>`;
-            }
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        document.getElementById('gen-k').addEventListener('change', function() {
-            const k = parseInt(this.value);
-            const n = parseInt(document.getElementById('gen-n').value);
-            const m = parseInt(document.getElementById('gen-m').value);
-            if (m > k) alert('m should be ≤ k');
-            if (k > n) alert('k should be ≤ n');
-        });
-    </script>
-</body>
-</html>
+<!-- <!DOCTYPE html> -->
+<!-- <html lang="en"> -->
+<!-- <head> -->
+<!--     <meta charset="UTF-8"> -->
+<!--     <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+<!--     <title>Secret Sharing System</title> -->
+<!--     <style> -->
+<!--         * { margin: 0; padding: 0; box-sizing: border-box; } -->
+<!--         body { -->
+<!--             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -->
+<!--             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -->
+<!--             min-height: 100vh; -->
+<!--             padding: 20px; -->
+<!--         } -->
+<!--         .container { max-width: 1200px; margin: 0 auto; } -->
+<!--         .header { text-align: center; color: white; margin-bottom: 40px; } -->
+<!--         .header h1 { font-size: 2.5em; margin-bottom: 10px; } -->
+<!--         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; } -->
+<!--         .card { -->
+<!--             background: white; -->
+<!--             border-radius: 15px; -->
+<!--             padding: 30px; -->
+<!--             box-shadow: 0 10px 40px rgba(0,0,0,0.2); -->
+<!--         } -->
+<!--         .card h2 { color: #333; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px; } -->
+<!--         .form-group { margin-bottom: 20px; } -->
+<!--         label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; } -->
+<!--         input, select, textarea { -->
+<!--             width: 100%; -->
+<!--             padding: 10px; -->
+<!--             border: 1px solid #ddd; -->
+<!--             border-radius: 8px; -->
+<!--             font-size: 14px; -->
+<!--         } -->
+<!--         textarea { resize: vertical; font-family: monospace; } -->
+<!--         button { -->
+<!--             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -->
+<!--             color: white; -->
+<!--             border: none; -->
+<!--             padding: 12px 30px; -->
+<!--             border-radius: 8px; -->
+<!--             cursor: pointer; -->
+<!--             font-size: 16px; -->
+<!--             font-weight: 600; -->
+<!--             transition: transform 0.2s; -->
+<!--         } -->
+<!--         button:hover { transform: translateY(-2px); } -->
+<!--         .share-list { -->
+<!--             display: grid; -->
+<!--             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); -->
+<!--             gap: 15px; -->
+<!--             margin-top: 20px; -->
+<!--             max-height: 400px; -->
+<!--             overflow-y: auto; -->
+<!--         } -->
+<!--         .share-item { -->
+<!--             background: #f8f9fa; -->
+<!--             border: 1px solid #dee2e6; -->
+<!--             border-radius: 8px; -->
+<!--             padding: 15px; -->
+<!--             text-align: center; -->
+<!--         } -->
+<!--         .share-item.mandatory { background: #fff3cd; border-color: #ffc107; } -->
+<!--         .share-item a { -->
+<!--             color: white; -->
+<!--             text-decoration: none; -->
+<!--             display: inline-block; -->
+<!--             margin-top: 10px; -->
+<!--             padding: 8px 15px; -->
+<!--             background: #667eea; -->
+<!--             border-radius: 5px; -->
+<!--         } -->
+<!--         .result { -->
+<!--             background: #f8f9fa; -->
+<!--             border-left: 4px solid #28a745; -->
+<!--             padding: 20px; -->
+<!--             border-radius: 8px; -->
+<!--             margin-top: 20px; -->
+<!--             font-family: monospace; -->
+<!--             white-space: pre-wrap; -->
+<!--             word-wrap: break-word; -->
+<!--             max-height: 400px; -->
+<!--             overflow-y: auto; -->
+<!--         } -->
+<!--         .error { background: #f8d7da; border-left-color: #dc3545; color: #721c24; } -->
+<!--         .loading { -->
+<!--             display: inline-block; -->
+<!--             width: 20px; -->
+<!--             height: 20px; -->
+<!--             border: 3px solid #f3f3f3; -->
+<!--             border-top: 3px solid #667eea; -->
+<!--             border-radius: 50%; -->
+<!--             animation: spin 1s linear infinite; -->
+<!--         } -->
+<!--         @keyframes spin { to { transform: rotate(360deg); } } -->
+<!--         .row { display: flex; gap: 15px; } -->
+<!--         .row .form-group { flex: 1; } -->
+<!--         .success { color: #28a745; font-weight: bold; margin-top: 10px; } -->
+<!--         .info-box { -->
+<!--             background: #e7f3ff; -->
+<!--             border-left: 4px solid #2196f3; -->
+<!--             padding: 15px; -->
+<!--             margin-bottom: 20px; -->
+<!--             border-radius: 8px; -->
+<!--             font-size: 14px; -->
+<!--         } -->
+<!--         .file-list { -->
+<!--             margin-top: 10px; -->
+<!--             padding: 10px; -->
+<!--             background: #f8f9fa; -->
+<!--             border-radius: 8px; -->
+<!--             font-size: 12px; -->
+<!--             max-height: 100px; -->
+<!--             overflow-y: auto; -->
+<!--         } -->
+<!--         .file-list span { -->
+<!--             display: inline-block; -->
+<!--             background: #e9ecef; -->
+<!--             padding: 2px 8px; -->
+<!--             margin: 2px; -->
+<!--             border-radius: 4px; -->
+<!--         } -->
+<!--         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } } -->
+<!--     </style> -->
+<!-- </head> -->
+<!-- <body> -->
+<!--     <div class="container"> -->
+<!--         <div class="header"> -->
+<!--             <h1>🔐 Secret Sharing System</h1> -->
+<!--             <p>BNB Secret Sharing with Mandatory Shares & Steganography</p> -->
+<!--         </div> -->
+<!---->
+<!--         <div class="grid"> -->
+<!--             <!-- Generate Section --> -->
+<!--             <div class="card"> -->
+<!--                 <h2>📤 Generate Shares</h2> -->
+<!--                 <div class="info-box"> -->
+<!--                     <strong>ℹ️ How it works:</strong><br> -->
+<!--                     - <strong>k</strong> = minimum number of shares needed to reconstruct the secret<br> -->
+<!--                     - <strong>n</strong> = total number of shares to generate<br> -->
+<!--                     - <strong>m</strong> = number of mandatory shares (must be included in reconstruction)<br> -->
+<!--                     <br> -->
+<!--                     <strong>Any k shares that include all m mandatory shares can reconstruct the secret!</strong> -->
+<!--                 </div> -->
+<!--                 <div class="row"> -->
+<!--                     <div class="form-group"> -->
+<!--                         <label>k (minimum shares needed)</label> -->
+<!--                         <input type="number" id="gen-k" value="3" min="1"> -->
+<!--                     </div> -->
+<!--                     <div class="form-group"> -->
+<!--                         <label>n (total shares)</label> -->
+<!--                         <input type="number" id="gen-n" value="5" min="1"> -->
+<!--                     </div> -->
+<!--                     <div class="form-group"> -->
+<!--                         <label>m (mandatory shares)</label> -->
+<!--                         <input type="number" id="gen-m" value="1" min="0"> -->
+<!--                     </div> -->
+<!--                 </div> -->
+<!---->
+<!--                 <div class="form-group"> -->
+<!--                     <label>Carrier Image (optional - uses default if not provided)</label> -->
+<!--                     <input type="file" id="carrier-image" accept="image/png,image/jpeg"> -->
+<!--                     <small style="color: #666;">Upload a PNG/JPEG image to hide shares in. If not provided, a default image will be used.</small> -->
+<!--                 </div> -->
+<!---->
+<!--                 <div class="form-group"> -->
+<!--                     <label>Encryption Algorithm</label> -->
+<!--                     <select id="gen-cipher"> -->
+<!--                         <option value="chacha">ChaCha20-Poly1305</option> -->
+<!--                         <option value="aes">AES-256-GCM</option> -->
+<!--                     </select> -->
+<!--                 </div> -->
+<!---->
+<!--                 <div class="form-group"> -->
+<!--                     <label>Secret Message</label> -->
+<!--                     <textarea id="secret-text" rows="4" placeholder="Enter your secret message here..."></textarea> -->
+<!--                 </div> -->
+<!---->
+<!--                 <div class="form-group"> -->
+<!--                     <label>Or Upload Secret File</label> -->
+<!--                     <input type="file" id="secret-file"> -->
+<!--                 </div> -->
+<!---->
+<!--                 <button onclick="generateShares()">🚀 Generate Shares</button> -->
+<!---->
+<!--                 <div id="gen-result"></div> -->
+<!--             </div> -->
+<!---->
+<!--             <!-- Reconstruct Section --> -->
+<!--             <div class="card"> -->
+<!--                 <h2>🔓 Reconstruct Secret</h2> -->
+<!--                 <div class="info-box"> -->
+<!--                     <strong>⚠️ Important:</strong><br> -->
+<!--                     - Upload ANY k shares (must include all m mandatory shares)<br> -->
+<!--                     - The shares can be in any order<br> -->
+<!--                     - The system will automatically detect mandatory shares -->
+<!--                 </div> -->
+<!--                 <div class="row"> -->
+<!--                     <div class="form-group"> -->
+<!--                         <label>k (minimum shares needed)</label> -->
+<!--                         <input type="number" id="rec-k" value="3"> -->
+<!--                     </div> -->
+<!--                     <div class="form-group"> -->
+<!--                         <label>m (mandatory shares)</label> -->
+<!--                         <input type="number" id="rec-m" value="1"> -->
+<!--                     </div> -->
+<!--                 </div> -->
+<!---->
+<!--                 <div class="form-group"> -->
+<!--                     <label>Encryption Algorithm</label> -->
+<!--                     <select id="rec-cipher"> -->
+<!--                         <option value="chacha">ChaCha20-Poly1305</option> -->
+<!--                         <option value="aes">AES-256-GCM</option> -->
+<!--                     </select> -->
+<!--                 </div> -->
+<!---->
+<!--                 <div class="form-group"> -->
+<!--                     <label>Upload Share Images (select multiple files)</label> -->
+<!--                     <input type="file" id="share-files" multiple accept="image/png" onchange="updateFileList()"> -->
+<!--                     <div class="file-list" id="file-list"> -->
+<!--                         <small>No files selected</small> -->
+<!--                     </div> -->
+<!--                     <small style="color: #666;">Select any k share files (must include all mandatory shares)</small> -->
+<!--                 </div> -->
+<!---->
+<!--                 <button onclick="reconstructSecret()">🔓 Reconstruct Secret</button> -->
+<!---->
+<!--                 <div id="rec-result"></div> -->
+<!--             </div> -->
+<!--         </div> -->
+<!--     </div> -->
+<!---->
+<!--     <script> -->
+<!--         function updateFileList() { -->
+<!--             const files = document.getElementById('share-files').files; -->
+<!--             const fileListDiv = document.getElementById('file-list'); -->
+<!--             const k = parseInt(document.getElementById('rec-k').value); -->
+<!---->
+<!--             if (files.length === 0) { -->
+<!--                 fileListDiv.innerHTML = '<small>No files selected</small>'; -->
+<!--                 return; -->
+<!--             } -->
+<!---->
+<!--             let html = '<strong>Selected files (' + files.length + '):</strong><br>'; -->
+<!--             for (let i = 0; i < files.length; i++) { -->
+<!--                 html += `<span>${files[i].name}</span>`; -->
+<!--             } -->
+<!---->
+<!--             if (files.length < k) { -->
+<!--                 html += `<br><span style="color: #ffc107;">⚠️ Warning: Need at least ${k} shares</span>`; -->
+<!--             } else { -->
+<!--                 html += `<br><span style="color: #28a745;">✅ Ready to reconstruct</span>`; -->
+<!--             } -->
+<!---->
+<!--             fileListDiv.innerHTML = html; -->
+<!--         } -->
+<!---->
+<!--         async function generateShares() { -->
+<!--             const k = parseInt(document.getElementById('gen-k').value); -->
+<!--             const n = parseInt(document.getElementById('gen-n').value); -->
+<!--             const m = parseInt(document.getElementById('gen-m').value); -->
+<!--             let secret = document.getElementById('secret-text').value; -->
+<!--             const secretFile = document.getElementById('secret-file').files[0]; -->
+<!--             const carrierFile = document.getElementById('carrier-image').files[0]; -->
+<!---->
+<!--             if (!secret && !secretFile) { -->
+<!--                 alert('Please enter a secret or upload a file'); -->
+<!--                 return; -->
+<!--             } -->
+<!---->
+<!--             if (secretFile) { -->
+<!--                 secret = await secretFile.text(); -->
+<!--                 document.getElementById('secret-text').value = secret; -->
+<!--             } -->
+<!---->
+<!--             if (m > k) { -->
+<!--                 alert('m (mandatory shares) cannot be greater than k (minimum shares)'); -->
+<!--                 return; -->
+<!--             } -->
+<!---->
+<!--             if (k > n) { -->
+<!--                 alert('k (minimum shares) cannot be greater than n (total shares)'); -->
+<!--                 return; -->
+<!--             } -->
+<!---->
+<!--             document.getElementById('gen-result').innerHTML = '<div class="loading"></div> Generating shares...'; -->
+<!---->
+<!--             try { -->
+<!--                 const formData = new FormData(); -->
+<!--                 formData.append('k', k); -->
+<!--                 formData.append('n', n); -->
+<!--                 formData.append('m', m); -->
+<!--                 formData.append('secret', secret); -->
+<!---->
+<!--                 if (carrierFile) { -->
+<!--                     formData.append('carrier', carrierFile); -->
+<!--                 } -->
+<!---->
+<!--                 const response = await fetch('/api/generate', { -->
+<!--                     method: 'POST', -->
+<!--                     body: formData -->
+<!--                 }); -->
+<!---->
+<!--                 const data = await response.json(); -->
+<!---->
+<!--                 if (response.ok) { -->
+<!--                     let html = '<div class="share-list"><h3>📦 Generated Shares:</h3>'; -->
+<!--                     for (const share of data.shares) { -->
+<!--                         const mandatoryClass = share.mandatory ? 'mandatory' : ''; -->
+<!--                         const mandatoryText = share.mandatory ? '🔴 MANDATORY' : '⚪ NORMAL'; -->
+<!--                         html += ` -->
+<!--                             <div class="share-item ${mandatoryClass}"> -->
+<!--                                 <strong>Share ${share.id}</strong><br> -->
+<!--                                 ${mandatoryText}<br> -->
+<!--                                 <a href="${share.url}" download="${share.url.split('/').pop()}"> -->
+<!--                                     ⬇️ Download PNG -->
+<!--                                 </a> -->
+<!--                             </div> -->
+<!--                         `; -->
+<!--                     } -->
+<!--                     html += '</div>'; -->
+<!--                     html += `<div class="success">✅ ${n} shares generated!<br> -->
+<!--                     Any ${k} shares (including the ${m} mandatory shares) can reconstruct the secret.</div>`; -->
+<!--                     document.getElementById('gen-result').innerHTML = html; -->
+<!--                 } else { -->
+<!--                     document.getElementById('gen-result').innerHTML = `<div class="result error">❌ Error: ${data.error}</div>`; -->
+<!--                 } -->
+<!--             } catch (err) { -->
+<!--                 document.getElementById('gen-result').innerHTML = `<div class="result error">❌ Error: ${err.message}</div>`; -->
+<!--             } -->
+<!--         } -->
+<!---->
+<!--         async function reconstructSecret() { -->
+<!--             const k = parseInt(document.getElementById('rec-k').value); -->
+<!--             const m = parseInt(document.getElementById('rec-m').value); -->
+<!--             const files = document.getElementById('share-files').files; -->
+<!---->
+<!--             if (files.length < k) { -->
+<!--                 alert(`Need at least ${k} shares, but only ${files.length} selected`); -->
+<!--                 return; -->
+<!--             } -->
+<!---->
+<!--             const formData = new FormData(); -->
+<!--             formData.append('k', k.toString()); -->
+<!--             formData.append('m', m.toString()); -->
+<!---->
+<!--             for (let i = 0; i < files.length; i++) { -->
+<!--                 formData.append('shares', files[i]); -->
+<!--             } -->
+<!---->
+<!--             document.getElementById('rec-result').innerHTML = '<div class="loading"></div> Reconstructing secret...'; -->
+<!---->
+<!--             try { -->
+<!--                 const response = await fetch('/api/reconstruct', { -->
+<!--                     method: 'POST', -->
+<!--                     body: formData -->
+<!--                 }); -->
+<!---->
+<!--                 const data = await response.json(); -->
+<!---->
+<!--                 if (response.ok) { -->
+<!--                     document.getElementById('rec-result').innerHTML = ` -->
+<!--                         <div class="result"> -->
+<!--                             <strong>✅ Secret Recovered Successfully!</strong><br><br> -->
+<!--                             <pre style="white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(data.secret)}</pre> -->
+<!--                         </div> -->
+<!--                     `; -->
+<!--                 } else { -->
+<!--                     document.getElementById('rec-result').innerHTML = `<div class="result error">❌ Error: ${data.error}</div>`; -->
+<!--                 } -->
+<!--             } catch (err) { -->
+<!--                 document.getElementById('rec-result').innerHTML = `<div class="result error">❌ Error: ${err.message}</div>`; -->
+<!--             } -->
+<!--         } -->
+<!---->
+<!--         function escapeHtml(text) { -->
+<!--             const div = document.createElement('div'); -->
+<!--             div.textContent = text; -->
+<!--             return div.innerHTML; -->
+<!--         } -->
+<!---->
+<!--         document.getElementById('gen-k').addEventListener('change', function() { -->
+<!--             const k = parseInt(this.value); -->
+<!--             const n = parseInt(document.getElementById('gen-n').value); -->
+<!--             const m = parseInt(document.getElementById('gen-m').value); -->
+<!--             if (m > k) alert('m should be ≤ k'); -->
+<!--             if (k > n) alert('k should be ≤ n'); -->
+<!--         }); -->
+<!--     </script> -->
+<!-- </body> -->
+<!-- </html> -->
