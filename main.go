@@ -669,6 +669,6 @@ func (s *Server) Run(addr string) error {
 func main() {
     srv := NewServer()
     log.Println("Server running on http://localhost:8080")
-    log.Println("BNB Secret Sharing Scheme - ANY k shares including mandatory can reconstruct")
+    log.Println("Secret Sharing Scheme - ANY k shares including mandatory can reconstruct")
     log.Fatal(srv.Run(":8080"))
 }
