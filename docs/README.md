@@ -158,6 +158,10 @@ After completing the foundation a networking layer was built using Go. The Gin f
 **Reconstruction & Decryption**
 ![part 5](https://github.com/ankushT369/research-project/blob/main/docs/part5.png)
 
+![total](https://github.com/ankushT369/research-project/blob/main/docs/total.png)
+
+
+
 ## Implementation
 ### Tech Stack & Environment
 The project was built using Go 1.21+, since it gives a good balance between performance and readability. Development was done on Linux (Ubuntu 22.04), but it should also work on macOS and Windows since Go is cross-platform.
