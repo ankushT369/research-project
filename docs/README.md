@@ -150,7 +150,7 @@ After completing the foundation a networking layer was built using Go. The Gin f
 
 **BNB Secret Sharing**
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part2.png" width="300">
+  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part2.png" width="200">
 </p>
 
 **Embedding**
