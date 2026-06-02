@@ -158,7 +158,8 @@ After completing the foundation a networking layer was built using Go. The Gin f
 **Reconstruction & Decryption**
 ![part 5](https://github.com/ankushT369/research-project/blob/main/docs/part5.png)
 
-![total](https://github.com/ankushT369/research-project/blob/main/docs/total.png)
+%%![total](https://github.com/ankushT369/research-project/blob/main/docs/total.png)
+<img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/total.png" width="500">
 
 
 
