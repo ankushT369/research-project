@@ -104,7 +104,9 @@ Suppose in some cases fragments F2, F4, F7, and F9 are lost to storage failures.
 Since we have five fragments the erasure coding algorithm is able to reconstruct the full original 1 MB image. This feature also provides fault tolerance at the expense of multiple full file copies.
 
 **s3 working**
-![s3 working](https://github.com/ankushT369/research-project/blob/main/docs/s3.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/s3.png" width="300">
+</p>
 
 ### Vault12 and Shamir Secret Sharing
 
