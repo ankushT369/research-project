@@ -103,8 +103,8 @@ Suppose in some cases fragments F2, F4, F7, and F9 are lost to storage failures.
 
 Since we have five fragments the erasure coding algorithm is able to reconstruct the full original 1 MB image. This feature also provides fault tolerance at the expense of multiple full file copies.
 
-![s3 working](https://github.com/ankushT369/research-project/blob/main/docs/s3.png)
 **s3 working**
+![s3 working](https://github.com/ankushT369/research-project/blob/main/docs/s3.png)
 
 ### Vault12 and Shamir Secret Sharing
 
@@ -143,7 +143,20 @@ Based on the research papers, the foundation of the project was designed and imp
 
 After completing the foundation a networking layer was built using Go. The Gin framework was used to create the server on top of it, and the frontend was also developed alongside it. Finally, the complete system was deployed on AWS for integrity testing and to check the overall working of the project. This helpd in verifying that all components  were working together correctly.
 
+**Encryption Layer**
+![part 1](https://github.com/ankushT369/research-project/blob/main/docs/part1.png)
 
+**BNB Secret Sharing**
+![part 2](https://github.com/ankushT369/research-project/blob/main/docs/part2.png)
+
+**Embedding**
+![part 3](https://github.com/ankushT369/research-project/blob/main/docs/part3.png)
+
+**Extraction**
+![part 4](https://github.com/ankushT369/research-project/blob/main/docs/part4.png)
+
+**Reconstruction & Decryption**
+![part 5](https://github.com/ankushT369/research-project/blob/main/docs/part5.png)
 
 ## Implementation
 ### Tech Stack & Environment
