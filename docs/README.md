@@ -150,7 +150,7 @@ After completing the foundation a networking layer was built using Go. The Gin f
 
 <p align="center">
   <strong>BNB Secret Sharing</strong><br>
-  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part2.png" width="400">
+  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part2.png" width="300">
 </p>
 
 <p align="center">
@@ -167,9 +167,6 @@ After completing the foundation a networking layer was built using Go. The Gin f
   <strong>Reconstruction &amp; Decryption</strong><br>
   <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part5.png" width="400">
 </p>
-
-<img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/total.png" width="500">
-
 
 
 ## Implementation
