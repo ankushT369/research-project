@@ -49,9 +49,9 @@ Here are some of the criteria to consider when designing an audio/video steganog
 - Other encryption methods besides **ChaCha20-Poly1305**
 - Security analysis references (no proofs).
 #### Requirements:
-- The** **maximum** **possible** **length** **of the secret** **will** **depend** **on** **the resolution (image width)** **and aspect ratio (image height) of the carrier image's resolution (Imagewidth, imageheight, and 3 bits).
-- The shares will have to be generated serverside because** **the** **secret** **will** **require k and m to** **reconstruct.
-- The** **carrier** **default** **resolution** **will be set to 800×600 pixels** (**approximately 180 KB of capacity).
+- The maximum possible length of the secret will depend on the resolution (image width and aspect ratio (image height) of the carrier image's resolution (Imagewidth, imageheight, and 3 bits).
+- The shares will have to be generated serverside because the secret will require k and m to reconstruct.
+- The carrier default resolution will be set to 800×600 pixels (approximately 180 KB of capacity).
 
 ## Project Planning
 The project was started by dividing the group members based on their strengths. After that, research was done on different encryption algorithms such as AES, ChaCha20, and chaos-based algorithms. The chaos-based algorithm was an important part of the project because it can help in balancing both security and speed.
