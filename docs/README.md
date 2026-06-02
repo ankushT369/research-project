@@ -1,25 +1,25 @@
 # **Priority-Aware Secure Secret Sharing: A Linear Bounded and Threshold-Based Framework**
 
-# Abstract
+## Abstract
 **Priority-Aware Secure Secret Sharing: A Linear Bounded and Threshold-Based Framework**
 In the past it has been assumed in secret sharing that all parties are equal which we see as a flaw in the system especially in cases where some should be given more importance in the reconstruction process. What we did in this research was to put forth a hierarchical approach which in it we used the BNB Linear Bounded combinatorial scheme and image steganography which only present the required minimum shares which are a must for secret reconstruction. We introduced a dual constraint access structure which includes a threshold k and also mandatory subsets m which are in fact the requirements for successful secret reconstruction. We used combinatorial mask matrices to generate the shares via a bitwise AND operation and also we made it a point that reconstruction may only happen via an OR aggregation process when all the m mandatory shares are present.
 
 The Secret is shared using ChaCha20-Poly1305 which is an authenticated encryption method we also use SHA-250 for integrity check, in addition we use BNB for breaking down into shares and steganographic encoding for the shares. As a proof of concept we used Go to put forth our idea which we did through various scenarios like successful share decode, which also included that only required shares be present and that we put in place tamper proof features. We see this to play in corporate governance, legal escrows, military chain of command, and block chain key recovery which is when the what of the shares comes into play in addition to how many.
 
-# Introduction
-## Motivation
+## Introduction
+### Motivation
 The single point of failure can makes it easy to lose sensitive information if the encryption key has been lost, therefore it can directly compromise the security of sensitive data. In addition to losing security through a breach, privy possessor's ability to share sensitive data will also be undermined. There are several ways that secret sharing can be implemented by allocating trust to several different individuals. Shamir’s (k,n) secret sharing method produces n shares, and any k of those shares can reconstruct the original secret. However, this technique makes several assumptions about how parties will behave equally; they will likely not behave equally.
 
 Weighted and multi-level methods address this problem, but they will typically take a longer time to compute or otherwise produce many more bits per share of information. The BNB scheme is the best solution because it provides a pre-determined quantity of shares using combinatorial masking for reconstruction, and it is still utilizing a cryptographic-based design.
 
 In order to solve these issues, we will incorporate steganography into the sharing process and create an innocuous image to hide individual shares.
 
-## Problem Statement
+### Problem Statement
 Current secret sharing methods have some limitations. Most traditional schemes treat all shares equally and do not provide any hierarchy between participants. Also, when shares are stored in binary or hexadecimal form, they can leave visible artifacts which may attract unwanted attention. Another issue is that many methods do not provide a proper way to verify whether a share has been modified or tampered with.
 
 To solve these problems, the proposed system uses the BNB protocol with mandated shares, hides the shares inside images using steganography, and applies authenticated encryption with integrity verification to make the sharing process more secure and reliable.
 
-## Aim & Objective
+### Aim & Objective
 Aim: Our main aim is to to **create** and **confirm** a priority based secure secret sharing system **that** **combines** mandatory **BNB** **sharing** **and** image steganography.
 
 Objective: To develop, implement and validate a prioritized secure secret sharing mechanism by integrating BNB mandatory shares along with steganographic techniques.
@@ -32,15 +32,15 @@ Goals:
 5. Validation of system for different parameters.
 6. Analysis of security issues such as brute force and steganographic detection attacks.
 
-## Scope
-### In-Scope:
+### Scope
+#### In-Scope:
 - We have used **BNB** algorithm to determine how to break up secrets into their binary components.
 - **ChaCha20-Poly1305** authentication method that uses random keys
 - Steganographic LSB embedding process for PNG files using a 33 bit self-descriptive header.
 - Web interface and RESTful API endpoint will allow users to upload carrier images automatically and retrieve any default data.
 - When inputting a secret in text or file format, the secret is automatically reconstructed after the user has completed downloading it.
 
-### Out-of-Scope:
+#### Out-of-Scope:
 Here are some of the criteria to consider when designing an audio/video steganography system:
 - Audio or video as the carrier of the hidden information
 - Robustness against compression and/or transformation of hidden data
@@ -48,12 +48,12 @@ Here are some of the criteria to consider when designing an audio/video steganog
 - Web interface authentication
 - Other encryption methods besides **ChaCha20-Poly1305**
 - Security analysis references (no proofs).
-### Requirements:
+#### Requirements:
 - The** **maximum** **possible** **length** **of the secret** **will** **depend** **on** **the resolution (image width)** **and aspect ratio (image height) of the carrier image's resolution (Imagewidth, imageheight, and 3 bits).
 - The shares will have to be generated serverside because** **the** **secret** **will** **require k and m to** **reconstruct.
 - The** **carrier** **default** **resolution** **will be set to 800×600 pixels** (**approximately 180 KB of capacity).
 
-# Project Planning
+## Project Planning
 The project was started by dividing the group members based on their strengths. After that, research was done on different encryption algorithms such as AES, ChaCha20, and chaos-based algorithms. The chaos-based algorithm was an important part of the project because it can help in balancing both security and speed.
 
 After researching many algorithms, it was decided that the implementation should be flexible so that different algorithms can be chosen according to the requirment. Then, research papers of the BNB secret sharing algorithm were studied to understand their working and linear approach.
@@ -62,7 +62,7 @@ Based on the research papers, the foundation of the project was designed and imp
 
 After completing the foundation a networking layer was built using Go. The Gin framework was used to create the server on top of it, and the frontend was also developed alongside it. Finally, the complete system was deployed on AWS for integrity testing and to check the overall working of the project. This helpd in verifying that all components  were working together correctly.
 
-# Literature Review
+## Literature Review
 
 ### **Erasure Coding in Cloud Storage Systems**
 
@@ -77,7 +77,7 @@ For example:
 | Size of Each Fragment | ~0.2 MB |
 | Total Storage Required | ~1.8 MB |
 
-#### Working Principle
+### Working Principle
 
 - In a cloud setting we have an 1 MB image file which is broken into many data blocks.
 - We use math based schemes like Reed Solomon Coding that create extra parity blocks.
@@ -142,7 +142,7 @@ Share 2 + Share 5  = denied.
 
 In any set of at least three shares the master key will be released and the Vault opened.
 
-# Implementation
+## Implementation
 ### Tech Stack & Environment
 The project was built using Go 1.21+, since it gives a good balance between performance and readability. Development was done on Linux (Ubuntu 22.04), but it should also work on macOS and Windows since Go is cross-platform.
 
