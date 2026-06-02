@@ -144,21 +144,25 @@ Based on the research papers, the foundation of the project was designed and imp
 After completing the foundation a networking layer was built using Go. The Gin framework was used to create the server on top of it, and the frontend was also developed alongside it. Finally, the complete system was deployed on AWS for integrity testing and to check the overall working of the project. This helpd in verifying that all components  were working together correctly.
 
 **Encryption Layer**
-![part 1](https://github.com/ankushT369/research-project/blob/main/docs/part1.png)
+
+<img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part1.png" width="500">
 
 **BNB Secret Sharing**
-![part 2](https://github.com/ankushT369/research-project/blob/main/docs/part2.png)
+
+<img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part2.png" width="500">
 
 **Embedding**
-![part 3](https://github.com/ankushT369/research-project/blob/main/docs/part3.png)
+
+<img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part3.png" width="500">
 
 **Extraction**
-![part 4](https://github.com/ankushT369/research-project/blob/main/docs/part4.png)
+
+<img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part4.png" width="500">
 
 **Reconstruction & Decryption**
-![part 5](https://github.com/ankushT369/research-project/blob/main/docs/part5.png)
 
-%%![total](https://github.com/ankushT369/research-project/blob/main/docs/total.png)
+<img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/part5.png" width="500">
+
 <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/total.png" width="500">
 
 
