@@ -20,7 +20,7 @@ Current secret sharing methods have some limitations. Most traditional schemes t
 To solve these problems, the proposed system uses the BNB protocol with mandated shares, hides the shares inside images using steganography, and applies authenticated encryption with integrity verification to make the sharing process more secure and reliable.
 
 ### Aim & Objective
-Aim: Our main aim is to to **create** and **confirm** a priority based secure secret sharing system **that** **combines** mandatory **BNB** **sharing** **and** image steganography.
+Aim: Our main aim is to to create and confirm a priority based secure secret sharing system that combines mandatory BNB sharing and image steganography.
 
 Objective: To develop, implement and validate a prioritized secure secret sharing mechanism by integrating BNB mandatory shares along with steganographic techniques.
 
@@ -286,3 +286,60 @@ We verified:
 - LSB method breaks if image is compressed or resized
 - JPEG format is not supported due to lossy compression
 
+
+```mermaid
+flowchart TD
+    subgraph Encryption["1. Encryption Layer"]
+        A[Secret Message] --> B[Compute SHA256 hash]
+        B --> C[Append hash + message]
+        C --> D{Choose Cipher}
+        D -->|ChaCha20| E[Generate random key + nonce]
+        D -->|Chaos-Logistic| F[Generate random seed]
+        E --> G[AEAD encryption]
+        F --> H[Generate keystream via logistic map]
+        H --> I[XOR encryption]
+        G --> J[Format: cipher:len:key:ciphertext]
+        I --> J
+    end
+
+    subgraph BNBSharing["2. BNB Secret Sharing"]
+        J --> K[String to Bits]
+        K --> L[Generate combinations<br>n choose k-1]
+        L --> M[Create masks matrix<br>n rows × maskWidth cols]
+        M --> N[Append mandatory<br>identity matrix]
+        N --> O[Repeat masks to match<br>secret bit length]
+        O --> P[Compute shares:<br>share[i][j] = mask[i][j] & secret[j]]
+    end
+
+    subgraph StegEmbed["3. Embedding"]
+        P --> Q{For each share}
+        Q --> R[Open carrier image]
+        R --> S[Flatten RGB pixels]
+        S --> T[Create header:<br>1 flag bit + 32 length bits]
+        T --> U[Append share bits]
+        U --> V[Modify LSB of each pixel]
+        V --> W[Save as PNG share]
+    end
+
+    subgraph StegExtract["4. Extraction (Reconstruction)"]
+        X[Upload share images] --> Y[Read RGB pixels]
+        Y --> Z[Extract flag bit]
+        Z --> AA[Extract 32-bit length]
+        AA --> AB[Extract share bits]
+        AB --> AC[Collect k shares]
+    end
+
+    subgraph Reconstruction["5. Reconstruction"]
+        AC --> AD[For each bit position]
+        AD --> AE[bit = OR across shares]
+        AE --> AF[Bits to String]
+        AF --> AG[Parse cipher, key, ciphertext]
+        AG --> AH{Decrypt}
+        AH -->|ChaCha20| AI[AEAD decrypt]
+        AH -->|Chaos| AJ[Regenerate keystream<br>from seed]
+        AJ --> AK[XOR decrypt]
+        AI --> AL[Verify hash]
+        AK --> AL
+        AL --> AM[Original secret message]
+    end
+```
