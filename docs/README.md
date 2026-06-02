@@ -105,7 +105,7 @@ Since we have five fragments the erasure coding algorithm is able to reconstruct
 
 **s3 working**
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/s3.png" width="300">
+  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/s3.png" width="450">
 </p>
 
 ### Vault12 and Shamir Secret Sharing
