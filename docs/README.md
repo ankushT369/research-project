@@ -1,3 +1,11 @@
+# **Priority-Aware Secure Secret Sharing: A Linear Bounded and Threshold-Based Framework**
+
+# Abstract
+**Priority-Aware Secure Secret Sharing: A Linear Bounded and Threshold-Based Framework**
+In the past it has been assumed in secret sharing that all parties are equal which we see as a flaw in the system especially in cases where some should be given more importance in the reconstruction process. What we did in this research was to put forth a hierarchical approach which in it we used the BNB Linear Bounded combinatorial scheme and image steganography which only present the required minimum shares which are a must for secret reconstruction. We introduced a dual constraint access structure which includes a threshold k and also mandatory subsets m which are in fact the requirements for successful secret reconstruction. We used combinatorial mask matrices to generate the shares via a bitwise AND operation and also we made it a point that reconstruction may only happen via an OR aggregation process when all the m mandatory shares are present.
+
+The Secret is shared using ChaCha20-Poly1305 which is an authenticated encryption method we also use SHA-250 for integrity check, in addition we use BNB for breaking down into shares and steganographic encoding for the shares. As a proof of concept we used Go to put forth our idea which we did through various scenarios like successful share decode, which also included that only required shares be present and that we put in place tamper proof features. We see this to play in corporate governance, legal escrows, military chain of command, and block chain key recovery which is when the what of the shares comes into play in addition to how many.
+
 # Introduction
 ## Motivation
 The single point of failure can makes it easy to lose sensitive information if the encryption key has been lost, therefore it can directly compromise the security of sensitive data. In addition to losing security through a breach, privy possessor's ability to share sensitive data will also be undermined. There are several ways that secret sharing can be implemented by allocating trust to several different individuals. Shamir’s (k,n) secret sharing method produces n shares, and any k of those shares can reconstruct the original secret. However, this technique makes several assumptions about how parties will behave equally; they will likely not behave equally.
@@ -53,6 +61,86 @@ After researching many algorithms, it was decided that the implementation should
 Based on the research papers, the foundation of the project was designed and implemented. Since this foundation is the main part on which the whole project works, extra focus was given to understand and implement it properly.
 
 After completing the foundation a networking layer was built using Go. The Gin framework was used to create the server on top of it, and the frontend was also developed alongside it. Finally, the complete system was deployed on AWS for integrity testing and to check the overall working of the project. This helpd in verifying that all components  were working together correctly.
+
+# Literature Review
+
+### **Erasure Coding in Cloud Storage Systems**
+
+AWS Cloud storage system S3 should present to users a world in which their data is always available at a moment’s notice even in the face of hardware failures. While we do replicate the same files multiple times which does indeed improve reliability it also greatly increases storage costs. To that end which is a issue we have addressed in modern distributed storage systems which implement a method called Erasure Coding. Erasure coding is a data protection strategy which breaks a file up into many pieces and also creates extra redundant pieces. These pieces are then sent out to different storage nodes or servers. Should some of these pieces fall to disk failure, network issue, or server going down the original file can still be reconstructed from what is left.
+
+For example:
+
+| Parameter | Value |
+| --- | --- |
+| Original Image Size | 1 MB |
+| Fragments Generated | 9 |
+| Size of Each Fragment | ~0.2 MB |
+| Total Storage Required | ~1.8 MB |
+
+#### Working Principle
+
+- In a cloud setting we have an 1 MB image file which is broken into many data blocks.
+- We use math based schemes like Reed Solomon Coding that create extra parity blocks.
+- The data and parity blocks are distributed in many storage servers.
+- At the time of retrieval we require only a minimal set of fragments to rebuild the original image.
+
+In the case of a (5,9) erasure coding scheme:
+
+Total fragments generated = 9
+At minimum 5 fragments for recovery.
+The large image of 1 MB may be divided into nine pieces each of about 0.2 MB.
+
+| Fragment | Size |
+| --- | --- |
+| F1 | 0.2 MB |
+| F2 | 0.2 MB |
+| F3 | 0.2 MB |
+| F4 | 0.2 MB |
+| F5 | 0.2 MB |
+| F6 | 0.2 MB |
+| F7 | 0.2 MB |
+| F8 | 0.2 MB |
+| F9 | 0.2 MB |
+
+Total storage used: Total space used:.
+
+Total Storage 9 * 0.2 MB 1.8 MB.
+
+So the storage requirement is 1.8 times that of the original file.
+
+Suppose in some cases fragments F2, F4, F7, and F9 are lost to storage failures. Also available fragments: F1, F3, F5, F6, F8
+
+Since we have five fragments the erasure coding algorithm is able to reconstruct the full original 1 MB image. This feature also provides fault tolerance at the expense of multiple full file copies.
+
+![s3 working](https://github.com/ankushT369/research-project/blob/main/docs/s3.png)
+
+### Vault12 and Shamir Secret Sharing
+
+Vault12 is a well known secret management platform. It puts together and administers and controls access to protected info like API keys, passwords, encryption keys, certificates and auth credentials. In terms of security features, what Vault12 does best is it’s implementation of Shamir Secret Sharing (SSS) which in turn protects the master encryption key. Thus Vault is also one of the leading examples of threshold cryptography in practice.
+
+#### Working Principle:
+
+When Vault12 is initialized it creates a master key which in turn protects all stored secrets. Instead of putting this master key in one place Vault breaks it up into many pieces with Shamir Secret Sharing. For instance Vault may be set up as a (3,5) threshold scheme:.
+
+Total shares generated = 5
+
+Minimum shares required = 3
+
+The primary key is broken into five parts which are given out to trusted administrators.
+
+Master Key → Shamir Secret Sharing → Share1,  Share2,  Share3,  Share4,  Share5
+
+#### Unsealing Process
+
+Vault stays in a protected state which we may term as a “sealed” state. To access stored secrets a certain threshold of shares is required. Example:.
+
+Share 1 +  Share 2 +  Share 3 =  Vault Opened .
+
+Share 1 +  Share 4 + Share 5  = Vault open .
+
+Share 2 + Share 5  = denied.
+
+In any set of at least three shares the master key will be released and the Vault opened.
 
 # Implementation
 ### Tech Stack & Environment
@@ -197,3 +285,4 @@ We verified:
 - Logistic map cipher is only for learning purpose, not production use
 - LSB method breaks if image is compressed or resized
 - JPEG format is not supported due to lossy compression
+
