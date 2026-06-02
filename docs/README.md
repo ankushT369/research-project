@@ -53,15 +53,6 @@ Here are some of the criteria to consider when designing an audio/video steganog
 - The shares will have to be generated serverside because the secret will require k and m to reconstruct.
 - The carrier default resolution will be set to 800×600 pixels (approximately 180 KB of capacity).
 
-## Project Planning
-The project was started by dividing the group members based on their strengths. After that, research was done on different encryption algorithms such as AES, ChaCha20, and chaos-based algorithms. The chaos-based algorithm was an important part of the project because it can help in balancing both security and speed.
-
-After researching many algorithms, it was decided that the implementation should be flexible so that different algorithms can be chosen according to the requirment. Then, research papers of the BNB secret sharing algorithm were studied to understand their working and linear approach.
-
-Based on the research papers, the foundation of the project was designed and implemented. Since this foundation is the main part on which the whole project works, extra focus was given to understand and implement it properly.
-
-After completing the foundation a networking layer was built using Go. The Gin framework was used to create the server on top of it, and the frontend was also developed alongside it. Finally, the complete system was deployed on AWS for integrity testing and to check the overall working of the project. This helpd in verifying that all components  were working together correctly.
-
 ## Literature Review
 
 ### **Erasure Coding in Cloud Storage Systems**
@@ -113,6 +104,7 @@ Suppose in some cases fragments F2, F4, F7, and F9 are lost to storage failures.
 Since we have five fragments the erasure coding algorithm is able to reconstruct the full original 1 MB image. This feature also provides fault tolerance at the expense of multiple full file copies.
 
 ![s3 working](https://github.com/ankushT369/research-project/blob/main/docs/s3.png)
+**s3 working**
 
 ### Vault12 and Shamir Secret Sharing
 
@@ -141,6 +133,17 @@ Share 1 +  Share 4 + Share 5  = Vault open .
 Share 2 + Share 5  = denied.
 
 In any set of at least three shares the master key will be released and the Vault opened.
+
+## Project Planning and Designing
+The project was started by dividing the group members based on their strengths. After that, research was done on different encryption algorithms such as AES, ChaCha20, and chaos-based algorithms. The chaos-based algorithm was an important part of the project because it can help in balancing both security and speed.
+
+After researching many algorithms, it was decided that the implementation should be flexible so that different algorithms can be chosen according to the requirment. Then, research papers of the BNB secret sharing algorithm were studied to understand their working and linear approach.
+
+Based on the research papers, the foundation of the project was designed and implemented. Since this foundation is the main part on which the whole project works, extra focus was given to understand and implement it properly.
+
+After completing the foundation a networking layer was built using Go. The Gin framework was used to create the server on top of it, and the frontend was also developed alongside it. Finally, the complete system was deployed on AWS for integrity testing and to check the overall working of the project. This helpd in verifying that all components  were working together correctly.
+
+
 
 ## Implementation
 ### Tech Stack & Environment
@@ -286,24 +289,3 @@ We verified:
 - LSB method breaks if image is compressed or resized
 - JPEG format is not supported due to lossy compression
 
-
-```mermaid
-graph TD
-    START[Start] --> ENC[Encrypt secret with cipher]
-    ENC --> BNB[BNB Secret Sharing: n shares, need k to recover, m mandatory]
-    BNB --> STEG[Embed shares into carrier images via LSB]
-    STEG --> DIST[Distribute share images]
-    
-    DIST --> COLLECT[Collect at least k shares including m mandatory]
-    COLLECT --> EXTRACT[Extract shares from images]
-    EXTRACT --> RECON[Reconstruct bits using OR operation]
-    RECON --> DECRYPT[Decrypt using same cipher]
-    DECRYPT --> VERIFY[Verify SHA256 hash]
-    VERIFY --> END[Original secret recovered]
-    
-    style ENC fill:#bbf
-    style BNB fill:#bfb
-    style STEG fill:#fbb
-    style EXTRACT fill:#ffb
-    style DECRYPT fill:#bff
-```
