@@ -198,7 +198,7 @@ For the designing phase we first thought about how the whole system will flow li
   <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/total.png" width="600">
 </p>
 
-## Implementation
+# Implementation
 ### Tech Stack & Environment
 The project was built using Go 1.21+, since it gives a good balance between performance and readability. Development was done on Linux (Ubuntu 22.04), but it should also work on macOS and Windows since Go is cross-platform.
 
@@ -217,36 +217,34 @@ We supported two encryption methods so that different approaches can be tested.
 
 Basic flow looks like this:
 
-```go
-func (c *ChaCha20Cipher) Encrypt(plaintext []byte) ([]byte, []byte, error) {
-    key := make([]byte, 32)
-    nonce := make([]byte, 12)
-    aead, _ := chacha20poly1305.New(key)
-    ciphertext := aead.Seal(nil, nonce, plaintext, nil)
-    return key, append(nonce, ciphertext...), nil
-}
+```
+FUNCTION Encrypt(plaintext):
+    key = random 32 bytes
+    nonce = random 12 bytes
+    ciphertext = ChaCha20_Encrypt(key, nonce, plaintext)
+    RETURN (key, nonce + ciphertext)
 ```
 
 **Chaotic Logistic Map** – This is more experimental. It uses the logistic map equation `x = r * x * (1 - x)` with values of r chosen in the chaotic range (3.57 to 4.0). The seed works as the key and is used to generate a keystream by iterating the function and taking byte values. Then XOR is used for encryption. It is not as strong as ChaCha20, but it was implemented for experimentation and comparison.
 
 Keystream generation is the main part:
 
-```go
-func (c *LogisticChaosCipher) generateKeystream(seed []byte, length int) []byte {
-    x := normalize(seed)
-    r := 3.57 + (seedVal * 1.7 % 0.43)
-
-    for i := 0; i < 100; i++ {
+```
+FUNCTION generateKeystream(seed, length):
+    x = map_seed_to_0.1_to_0.9(seed)
+    r = 3.57 + (mod(seed * 1.7, 0.43))
+    
+    // warm up
+    repeat 100 times:
         x = r * x * (1 - x)
-    }
-
-    keystream := make([]byte, length)
-    for i := 0; i < length; i++ {
+    
+    // generate bytes
+    result = []
+    repeat length times:
         x = r * x * (1 - x)
-        keystream[i] = byte(x * 256)
-    }
-    return keystream
-}
+        result.append(byte(x * 256))
+    
+    return result
 ```
 
 Both encryption methods finally output data in this format:
@@ -254,44 +252,57 @@ Both encryption methods finally output data in this format:
 This is then converted into bits for the secret sharing process.
 
 ### Layer 2 – BNB Secret Sharing
-The BNB scheme works on bits instead of numbers.
+The BNB scheme works directly on bits. Three parameters are defined:
 
-We define `n` total shares, `k` required shares for reconstruction, and `m` mandatory shares.
+- `n` – total number of shares
+- `k` – minimum shares required for reconstruction
+- `m` – number of mandatory shares (all must be present)
 
-For every bit position in the secret, a mask matrix is created. Each share gets a row from this mask and is ANDed with the secret bits.
+**Share generation:**  
+The secret string is first converted into bits. All combinations of choosing `(k-1)` shares out of `n` are generated. A mask matrix of size `n × (C + m)` is built, where `C` is the number of combinations. The first `C` columns contain unique patterns with exactly `(k-1)` zeros and the rest ones. The last `m` columns each have a single 1 in a unique mandatory share row. Each mask row is then tiled to match the length of the secret bits, and each share is computed as `mask_row AND secret_bits`.
 
-The idea is based on generating combinations of `(k-1)` shares out of `n`, along with mandatory constraints. This ensures:
+**Reconstruction:**  
+Any `k` shares that include all mandatory shares are taken, and a bitwise OR is performed. Due to the mask design, the OR recovers every 1 bit from the original secret.
 
-* Without at least `k` shares, reconstruction is not possible
-* Without all `m` mandatory shares, reconstruction also fails
 
-The same mask pattern is repeated across the full bit length so it works for longer inputs.
+**Mandatory Mask**
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/manmask.png" width="450">
+</p>
+
+**Mandatory Shares**
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/msgare.png" width="450">
+</p>
+
 
 Simplified logic:
 
 ```go
-func (bnb *BNBSecretSharing) GenerateShares(secretBits []int) ([][]int, error) {
-    combinations := generateCombinations(bnb.n, bnb.k-1)
-    masks := make([][]int, bnb.n)
-
-    for col, combo := range combinations {
-        for _, row := range combo {
-            masks[row][col] = 1
-        }
-    }
-
-    for i := 0; i < bnb.m; i++ {
-        masks[i][len(combinations)+i] = 1
-    }
-
-    shares := make([][]int, bnb.n)
-    for i := 0; i < bnb.n; i++ {
-        shares[i] = andBits(tileMask(masks[i], len(secretBits)), secretBits)
-    }
-
-    return shares, nil
-}
+FUNCTION GenerateShares(secret_bits):
+    // build the mask pattern
+    combos = C(n, k-1)  // all combinations
+    masks = empty_grid(n rows, combos_count + m columns)
+    
+    // fill combinations (which shares help reconstruct which positions)
+    for each combo in combos:
+        for each share in combo:
+            masks[share][combo_index] = 1
+    
+    // mark mandatory shares (first m shares)
+    for i = 0 to m-1:
+        masks[i][combos_count + i] = 1
+    
+    // create each share by tiling mask and AND with secret
+    shares = []
+    for i = 0 to n-1:
+        repeated_mask = repeat(masks[i], across full secret length)
+        shares[i] = repeated_mask & secret_bits   // bitwise AND
+    
+    return shares
 ```
+
+
 
 Reconstruction is simpler. It mainly ORs the share bits together. Because of the mask design, any bit present in at least `k` valid shares will reconstruct correctly.
 
@@ -341,4 +352,3 @@ We verified:
 - Logistic map cipher is only for learning purpose, not production use
 - LSB method breaks if image is compressed or resized
 - JPEG format is not supported due to lossy compression
-
