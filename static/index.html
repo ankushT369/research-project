@@ -125,8 +125,12 @@ input[type=file]{font-size:11px;padding:6px 10px;cursor:pointer}
         <label class="lbl">Encryption algorithm</label>
         <select id="gen-cipher">
           <option value="chacha">ChaCha20-Poly1305</option>
-          <option value="aes">AES-256-GCM</option>
+          <option value="chaos">Chaos-Logistic Map</option>
         </select>
+        <!-- <select id="gen-cipher"> -->
+        <!--   <option value="chacha">ChaCha20-Poly1305</option> -->
+        <!--   <option value="aes">AES-256-GCM</option> -->
+        <!-- </select> -->
       </div>
 
       <div class="fg">
@@ -172,8 +176,12 @@ input[type=file]{font-size:11px;padding:6px 10px;cursor:pointer}
         <label class="lbl">Encryption algorithm</label>
         <select id="rec-cipher">
           <option value="chacha">ChaCha20-Poly1305</option>
-          <option value="aes">AES-256-GCM</option>
+          <option value="chaos">Chaos-Logistic Map</option>
         </select>
+        <!-- <select id="rec-cipher"> -->
+        <!--   <option value="chacha">ChaCha20-Poly1305</option> -->
+        <!--   <option value="aes">AES-256-GCM</option> -->
+        <!-- </select> -->
       </div>
 
       <div class="fg">
@@ -235,6 +243,8 @@ async function generateShares(){
   showLoad('gen-result','Generating shares...');
   try{
     const fd=new FormData();
+    fd.append('cipher', document.getElementById('gen-cipher').value);
+
     fd.append('k',k);fd.append('n',n);fd.append('m',m);fd.append('secret',secret);
     if(cf)fd.append('carrier',cf);
     const res=await fetch('/api/generate',{method:'POST',body:fd});
@@ -266,6 +276,8 @@ async function reconstructSecret(){
   showLoad('rec-result','Reconstructing secret...');
   try{
     const fd=new FormData();
+      // In reconstructSecret(), add:
+    fd.append('cipher', document.getElementById('rec-cipher').value);
     fd.append('k',k);fd.append('m',m);
     for(let f of files)fd.append('shares',f);
     const res=await fetch('/api/reconstruct',{method:'POST',body:fd});
