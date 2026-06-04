@@ -198,6 +198,7 @@ For the designing phase we first thought about how the whole system will flow li
   <img src="https://raw.githubusercontent.com/ankushT369/research-project/main/docs/total.png" width="600">
 </p>
 
+
 # Implementation
 ### Tech Stack & Environment
 The project was built using Go 1.21+, since it gives a good balance between performance and readability. Development was done on Linux (Ubuntu 22.04), but it should also work on macOS and Windows since Go is cross-platform.
